@@ -1,0 +1,10 @@
+var N2decimal = 2;
+var N4decimal = 4;
+var PorIva = 12;
+var SPD = ".";
+var SPM = ",";
+var npass = "M1ll3r2024";
+var monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+var minLengthGeneral=3;
+var numPaginado=10;
+var opciones = { timeZone: 'America/Guayaquil' };
