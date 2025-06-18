@@ -36,9 +36,10 @@ require_once "Views/Instructor/Modals/modalInstructor.php";
                             <thead>
                                 <tr>
                                     <th>ID</th>
+                                    <th>Centro</th>
                                     <th>Cédula</th>
                                     <th>Nombre</th>
-                                    <th>Fecha</th>
+                                    <th>Fecha</th>                                    
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>

@@ -15,9 +15,10 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         "columns": [
             { "data": "Ids" },
+            { "data": "Centro" },
             { "data": "Cedula" },
             { "data": "Nombres" },
-            { "data": "Fecha" },
+            { "data": "Fecha" },            
             { "data": "Estado" },
             { "data": "options" }
         ],

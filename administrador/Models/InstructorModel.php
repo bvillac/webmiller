@@ -13,11 +13,13 @@ class InstructorModel extends MysqlAcademico
 
 	public function consultarDatos()
 	{
-		$sql = "SELECT  A.ins_id Ids,B.per_cedula Cedula, concat(B.per_nombre,' ',B.per_apellido) Nombres, A.ins_estado_logico Estado,date(A.ins_fecha_creacion) Fecha ";
+		$sql = "SELECT  A.ins_id Ids,B.per_cedula Cedula, concat(B.per_nombre,' ',B.per_apellido) Nombres, A.ins_estado_logico Estado,date(A.ins_fecha_creacion) Fecha,C.cat_nombre Centro 	 ";
 		$sql .= "	FROM " . $this->db_name . ".instructor A";
 		$sql .= "		INNER JOIN " . $this->db_nameAdmin . ".persona B";
 		$sql .= "			ON A.per_id=B.per_id AND B.estado_logico!=0";
+		$sql .= "			 INNER JOIN " . $this->db_nameAdmin . ".centro_atencion C ON A.cat_id=C.cat_id ";
 		$sql .= "	WHERE A.ins_estado_logico!=0 ";
+		putMessageLogFile($sql);
 		$request = $this->select_all($sql);
 		return $request;
 	}
@@ -134,6 +136,7 @@ class InstructorModel extends MysqlAcademico
 		$sql .= "		INNER JOIN " . $this->db_nameAdmin . ".persona B";
 		$sql .= "			ON A.per_id=B.per_id AND B.estado_logico!=0";
 		$sql .= "	WHERE A.ins_estado_logico!=0 AND A.cat_id={$catIds} ORDER BY Nombre DESC ";
+		putMessageLogFile($sql);
 		$request = $this->select_all($sql);
 		return $request;
         

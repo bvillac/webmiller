@@ -126,6 +126,7 @@ class Instructor extends Controllers
 
 					//}
 				}
+				putMessageLogFile($request);
 				if ($request["status"]) {
 					if ($option == 1) {
 						$arrResponse = array('status' => true, 'numero' => $request["numero"], 'msg' => 'Datos guardados correctamente.');
