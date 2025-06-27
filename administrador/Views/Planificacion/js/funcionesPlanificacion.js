@@ -347,10 +347,13 @@ function generarPlanificiacion(accionMove) {
   const tabla = $("#dts_Planificiacion");
   const Grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
 
+  console.log(Grid);
+
   if (!Grid.length) return;
 
   const fechaIni = $("#dtp_fecha_desde").val();
   const fechaFin = $("#dtp_fecha_hasta").val();
+
 
   if (accionMove === "Gen") {
     fechaDia = obtenerFormatoFecha(fechaIni);
@@ -369,6 +372,7 @@ function generarPlanificiacion(accionMove) {
     filaEncabezado.append(`<th>${instr["Nombre"].substring(0, 15).toUpperCase()}</th>`);//Tamaño de cada nombre
   });
 
+  console.log(filaEncabezado);
   $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
   $("#dts_Planificiacion thead").html(filaEncabezado);
   $("#dts_Planificiacion tbody").empty();
@@ -510,66 +514,64 @@ function objDataRow(nLetIni) {
 }
 
 function guardarTemp() {
-  let nLetIni = $("#FechaDia").html().toUpperCase();
-  nLetIni = nLetIni.substring(0, 2);
-  nLetIni = nLetIni == "SÁ" ? "SA" : nLetIni; //Se cambia por la Tilde
-  var arrayList = new Array();
-  if (sessionStorage.dts_PlaTemporal) {
-    arrayList = JSON.parse(sessionStorage.dts_PlaTemporal);
-    var size = arrayList.length;
-    if (size > 0) {
-      if (codigoExiste(nLetIni, "dia", sessionStorage.dts_PlaTemporal)) {
-        arrayList[size] = objDataRow(nLetIni);
-        sessionStorage.dts_PlaTemporal = JSON.stringify(arrayList);
-        swal("Información!", "Planificación Temporal Guardada.", "success");
-      } else {
-        swal(
-          {
-            title: "Actualizar",
-            text: "¿Realmente quiere Modificar Planificación?",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Si, Modificar!",
-            cancelButtonText: "No, cancelar!",
-            closeOnConfirm: false,
-            closeOnCancel: true,
-          },
-          function (isConfirm) {
-            if (isConfirm) {
-              eliminarItemsDia(nLetIni);
-              arrayList = JSON.parse(sessionStorage.dts_PlaTemporal);
-              arrayList[arrayList.length] = objDataRow(nLetIni);
-              sessionStorage.dts_PlaTemporal = JSON.stringify(arrayList);
-              swal(
-                "Información!",
-                "Planificación Temporal Guardada.",
-                "success"
-              );
-            }
-          }
-        );
-      }
-    } else {
-      arrayList[0] = objDataRow(nLetIni);
+  let nLetIni = $("#FechaDia").html().toUpperCase().substring(0, 2);
+  alert(nLetIni);
+  nLetIni = (nLetIni === "SÁ") ? "SA" : nLetIni; // Ajuste por tilde
+
+  let arrayList = sessionStorage.dts_PlaTemporal
+    ? JSON.parse(sessionStorage.dts_PlaTemporal)
+    : [];
+
+  const nuevaFila = objDataRow(nLetIni);
+
+  // Si ya hay registros
+  if (arrayList.length > 0) {
+    if (codigoExiste(nLetIni, "dia", sessionStorage.dts_PlaTemporal)) {
+      // Ya existe código, agregamos nueva fila
+      arrayList.push(nuevaFila);
       sessionStorage.dts_PlaTemporal = JSON.stringify(arrayList);
       swal("Información!", "Planificación Temporal Guardada.", "success");
+    } else {
+      // Confirmar modificación
+      swal(
+        {
+          title: "Actualizar",
+          text: "¿Realmente quiere Modificar Planificación?",
+          type: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, Modificar!",
+          cancelButtonText: "No, cancelar!",
+          closeOnConfirm: false,
+          closeOnCancel: true,
+        },
+        function (isConfirm) {
+          if (isConfirm) {
+            eliminarItemsDia(nLetIni); // Elimina el existente
+            let actualizada = JSON.parse(sessionStorage.dts_PlaTemporal);
+            actualizada.push(nuevaFila);
+            sessionStorage.dts_PlaTemporal = JSON.stringify(actualizada);
+            swal("Información!", "Planificación Temporal Guardada.", "success");
+          }
+        }
+      );
     }
   } else {
-    arrayList[0] = objDataRow(nLetIni);
+    // Primera vez
+    arrayList.push(nuevaFila);
     sessionStorage.dts_PlaTemporal = JSON.stringify(arrayList);
     swal("Información!", "Planificación Temporal Guardada.", "success");
   }
 }
 
 function eliminarItemsDia(nDia) {
-  if (sessionStorage.dts_PlaTemporal) {
-    var Grid = JSON.parse(sessionStorage.dts_PlaTemporal);
-    if (Grid.length > 0) {
-      var array = findAndRemove(Grid, "dia", nDia);
-      sessionStorage.dts_PlaTemporal = JSON.stringify(array);
-    }
-  }
+  if (!sessionStorage.dts_PlaTemporal) return;
+
+  let lista = JSON.parse(sessionStorage.dts_PlaTemporal);
+  const nuevaLista = lista.filter(item => item.dia !== nDia);
+
+  sessionStorage.dts_PlaTemporal = JSON.stringify(nuevaLista);
 }
+
 
 //Guardar todo
 function guardarAll(accion) {

@@ -451,7 +451,7 @@ function fntRolAsig() {
 
 function guardarInstructor(accion) {
     //let accion=($('#cmd_guardar').html()=="Guardar")?'Create':'edit';    
-    let Ids = document.querySelector('#txth_ids').value;
+    let Ids = (accion!="Create")?document.querySelector('#txth_ids').value:0;
     let per_id = document.querySelector('#txth_per_id').value;
     let centro = document.querySelector('#cmb_CentroAtencion').value;
     let txt_cedula = document.querySelector('#txt_cedula').value;

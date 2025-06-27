@@ -19,7 +19,6 @@ class InstructorModel extends MysqlAcademico
 		$sql .= "			ON A.per_id=B.per_id AND B.estado_logico!=0";
 		$sql .= "			 INNER JOIN " . $this->db_nameAdmin . ".centro_atencion C ON A.cat_id=C.cat_id ";
 		$sql .= "	WHERE A.ins_estado_logico!=0 ";
-		putMessageLogFile($sql);
 		$request = $this->select_all($sql);
 		return $request;
 	}
@@ -41,8 +40,9 @@ class InstructorModel extends MysqlAcademico
 	{
 		$idsUsuario = retornaUser();
 		$strPerID = $dataObj['per_id'];
+		$strCat_id = $dataObj['cat_id'];
 		$con = $this->getConexion();
-		$sql = "SELECT * FROM " . $this->db_name . ".instructor where per_id={$strPerID}";
+		$sql = "SELECT * FROM " . $this->db_name . ".instructor where per_id={$strPerID} and cat_id={$strCat_id}";
 		$request = $this->select_all($sql);
 		if (empty($request)) {
 			$con->beginTransaction();
@@ -77,10 +77,12 @@ class InstructorModel extends MysqlAcademico
 				//echo "Fallo: " . $e->getMessage();
 				//throw $e;
 				$arroout["status"] = false;
+				$arroout["mensaje"] = $e->getMessage();
 				return $arroout;
 			}
 		} else {
 			$arroout["status"] = false;
+			$arroout["mensaje"] = "Registro ya Existe en este Centro";
 			return $arroout;
 		}
 	}
@@ -136,7 +138,6 @@ class InstructorModel extends MysqlAcademico
 		$sql .= "		INNER JOIN " . $this->db_nameAdmin . ".persona B";
 		$sql .= "			ON A.per_id=B.per_id AND B.estado_logico!=0";
 		$sql .= "	WHERE A.ins_estado_logico!=0 AND A.cat_id={$catIds} ORDER BY Nombre DESC ";
-		putMessageLogFile($sql);
 		$request = $this->select_all($sql);
 		return $request;
         

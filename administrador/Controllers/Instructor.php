@@ -126,7 +126,6 @@ class Instructor extends Controllers
 
 					//}
 				}
-				putMessageLogFile($request);
 				if ($request["status"]) {
 					if ($option == 1) {
 						$arrResponse = array('status' => true, 'numero' => $request["numero"], 'msg' => 'Datos guardados correctamente.');
@@ -134,7 +133,7 @@ class Instructor extends Controllers
 						$arrResponse = array('status' => true, 'numero' => $request["numero"], 'msg' => 'Datos Actualizados correctamente.');
 					}
 				} else {
-					$arrResponse = array("status" => false, "msg" => 'No es posible almacenar los datos.');
+					$arrResponse = array("status" => false, "msg" => $request["mensaje"]);
 				}
 			}
 			echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);

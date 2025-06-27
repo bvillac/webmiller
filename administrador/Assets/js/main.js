@@ -139,31 +139,31 @@ function obtenerDiaSemana(numero) {
     return dias[numero];
 }
 
-function retornarDiaLetras(nLetIni){
+function retornarDiaLetras(nLetIni) {
     switch (nLetIni) {
-      case "LU":
-        nDia = "Lunes"
-        break;
-      case "MA":
-        nDia = "Martes"
-        break;
-      case "MI":
-        nDia = "Miércoles"
-        break;
-      case "JU":
-        nDia = "Jueves"
-        break;
-      case "VI":
-        nDia = "Viernes"
-        break;
-      case "SA":
-        nDia = "Sábado"
-        break;
-      default:
-        nDia = "Domingo"
+        case "LU":
+            nDia = "Lunes"
+            break;
+        case "MA":
+            nDia = "Martes"
+            break;
+        case "MI":
+            nDia = "Miércoles"
+            break;
+        case "JU":
+            nDia = "Jueves"
+            break;
+        case "VI":
+            nDia = "Viernes"
+            break;
+        case "SA":
+            nDia = "Sábado"
+            break;
+        default:
+            nDia = "Domingo"
     }
     return nDia;
-  }
+}
 
 
 
@@ -184,57 +184,60 @@ function obtenerFechaConLetras(fechaDia) {
 }
 
 
-//Obtener FORMATO fecha => 2023-11-13
-function obtenerFormatoFecha(fechaString){
-    //console.log(fechaString);
-    var partesFecha = fechaString.split("-");
-    var fechaReal = new Date(partesFecha[0], partesFecha[1] - 1, partesFecha[2]);
-    return fechaReal;
+// Convierte string "YYYY-MM-DD" en objeto Date
+function obtenerFormatoFecha(fechaString) {
+    if (!fechaString || typeof fechaString !== "string") return null;
+
+    const [anio, mes, dia] = fechaString.split("-").map(Number);
+    return new Date(anio, mes - 1, dia); // El mes es base 0
 }
 
-function retonarFecha(fecha){
-    var dia = fecha.getUTCDate();
-    var mes =fecha.getUTCMonth()+1;
-    var ano = fecha.getUTCFullYear();
-    return ano +'-'+ mes + '-' + dia
+// Convierte objeto Date a string "YYYY-MM-DD" con ceros a la izquierda
+function retornarFecha(fecha) {
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+    return `${anio}-${mes}-${dia}`;
 }
 
-function estaEnRango(Evento,fecha, fechaInicio, fechaFin) {
-    let obtResult = new Object();
-    //console.log(Evento + " fecha " +fecha + " fecha ini " +fechaInicio + " fecha fin " +fechaFin);
-    fecha=contarFechaDia(Evento,fecha);
-    if(fecha.getTime() > fechaInicio.getTime() && fecha.getTime() < fechaFin.getTime()){
-        //Dentro del Rengo
-        obtResult.estado="OK";
-        obtResult.fecha=fecha;    
-    }  else if (fecha.getTime() == fechaInicio.getTime()) {
-        obtResult.estado="INI";
-        obtResult.fecha=fechaInicio;
-    } else if (fecha.getTime() == fechaFin.getTime()) {
-        obtResult.estado="FIN";
-        obtResult.fecha=fechaFin;
-    } else if (fecha.getTime() < fechaInicio.getTime()) {
-        obtResult.estado="FUE";//Fuera de Rango
-        obtResult.fecha=fechaInicio;
-    } else if (fecha.getTime() > fechaFin.getTime()) {
-        obtResult.estado="FUE";
-        obtResult.fecha=fechaFin;
-    }else{
-        obtResult.estado="INI";
-        obtResult.fecha=fechaInicio;
-        //obtResult.fecha=0;
+// Verifica si una fecha está dentro del rango, o fuera
+function estaEnRango(evento, fecha, fechaInicio, fechaFin) {
+    const resultado = {};
+
+    // Avanza o retrocede la fecha según el evento
+    const nuevaFecha = contarFechaDia(evento, new Date(fecha)); // Clona la fecha para no modificarla directamente
+
+    const timeNueva = nuevaFecha.getTime();
+    const timeInicio = fechaInicio.getTime();
+    const timeFin = fechaFin.getTime();
+
+    if (timeNueva > timeInicio && timeNueva < timeFin) {
+        resultado.estado = "OK";
+        resultado.fecha = nuevaFecha;
+    } else if (timeNueva === timeInicio) {
+        resultado.estado = "INI";
+        resultado.fecha = fechaInicio;
+    } else if (timeNueva === timeFin) {
+        resultado.estado = "FIN";
+        resultado.fecha = fechaFin;
+    } else {
+        resultado.estado = "FUE";
+        resultado.fecha = timeNueva < timeInicio ? fechaInicio : fechaFin;
     }
-    return obtResult;
 
+    return resultado;
 }
 
+
+// Avanza o retrocede una fecha en 1 día
 function contarFechaDia(accionMove, fecha) {
-    if (accionMove == "Next") {
-        fecha.setDate(fecha.getDate() + 1);
-    } else if (accionMove == "Back") {
-        fecha.setDate(fecha.getDate() - 1);
+    const nuevaFecha = new Date(fecha); // Crear copia para no modificar el original
+    if (accionMove === "Next") {
+        nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+    } else if (accionMove === "Back") {
+        nuevaFecha.setDate(nuevaFecha.getDate() - 1);
     }
-    return fecha;
+    return nuevaFecha;
 }
 
 //Busca si existe un codigo en la lista JSON
@@ -250,58 +253,51 @@ function codigoExiste(value, property, lista) {
     return true;
 }
 
-//RETORNA EL INDEX DE LA LISTA
+// Retorna el índice del primer elemento que coincide con una propiedad y valor
 function retornarIndexArray(array, property, value) {
-    var index = -1;
-    for (var i = 0; i < array.length; i++) {
-        if (array[i][property] == value) {
-            index = i;
-            return index;
-        }
-    }
-    return index;
-}
+    if (!Array.isArray(array)) return -1;
+    return array.findIndex(item => item[property] == value);
+  }
+  
+  // Elimina todos los elementos del array que coincidan con la propiedad y valor
+  function findAndRemove(array, property, value) {
+    if (!Array.isArray(array)) return [];
+  
+    return array.filter(item => item[property] != value);
+  }
+  
 
-//REMUEVE EL EL ITEN DE LA LISTA POR UN DI
-function findAndRemove(array, property, value) {
-    for (var i = 0; i < array.length; i++) {
-        if (array[i][property] == value) {
-            array.splice(i, 1);
-        }
-    }
-    return array;
-}
 
+
+
+/*// Ejemplo de uso:
+var url = 'tu/url/aqui';
+var metodo = 'GET';
+var datos = { parametro1: 'valor1', parametro2: 'valor2' };
+ 
+realizarSolicitudAjax(url, metodo, datos, function(data) {
+  // Manejar el éxito de la solicitud aquí
+  console.log(data);
+}, function(jqXHR, textStatus, errorThrown) {
+  // Manejar el error de la solicitud aquí
+  console.error('Error en la solicitud. Estado:', textStatus, 'Error:', errorThrown);
+});*/
 
 function peticionAjax(url, metodo, datos, exitoCallback, errorCallback) {
     $.ajax({
-      url: url,
-      method: metodo,
-      data: datos,
-      dataType: 'json', // Puedes ajustar esto según el tipo de datos que esperas
-      success: function(data) {
-        if (exitoCallback && typeof exitoCallback === 'function') {
-          exitoCallback(data);
+        url: url,
+        method: metodo,
+        data: datos,
+        dataType: 'json', // Puedes ajustar esto según el tipo de datos que esperas
+        success: function (data) {
+            if (exitoCallback && typeof exitoCallback === 'function') {
+                exitoCallback(data);
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (errorCallback && typeof errorCallback === 'function') {
+                errorCallback(jqXHR, textStatus, errorThrown);
+            }
         }
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-        if (errorCallback && typeof errorCallback === 'function') {
-          errorCallback(jqXHR, textStatus, errorThrown);
-        }
-      }
     });
-  }
-  
-  /*// Ejemplo de uso:
-  var url = 'tu/url/aqui';
-  var metodo = 'GET';
-  var datos = { parametro1: 'valor1', parametro2: 'valor2' };
-  
-  realizarSolicitudAjax(url, metodo, datos, function(data) {
-    // Manejar el éxito de la solicitud aquí
-    console.log(data);
-  }, function(jqXHR, textStatus, errorThrown) {
-    // Manejar el error de la solicitud aquí
-    console.error('Error en la solicitud. Estado:', textStatus, 'Error:', errorThrown);
-  });*/
-  
+}
