@@ -187,7 +187,6 @@ function obtenerFechaConLetras(fechaDia) {
 // Convierte string "YYYY-MM-DD" en objeto Date
 function obtenerFormatoFecha(fechaString) {
     if (!fechaString || typeof fechaString !== "string") return null;
-
     const [anio, mes, dia] = fechaString.split("-").map(Number);
     return new Date(anio, mes - 1, dia); // El mes es base 0
 }
@@ -268,20 +267,6 @@ function retornarIndexArray(array, property, value) {
   
 
 
-
-
-/*// Ejemplo de uso:
-var url = 'tu/url/aqui';
-var metodo = 'GET';
-var datos = { parametro1: 'valor1', parametro2: 'valor2' };
- 
-realizarSolicitudAjax(url, metodo, datos, function(data) {
-  // Manejar el éxito de la solicitud aquí
-  console.log(data);
-}, function(jqXHR, textStatus, errorThrown) {
-  // Manejar el error de la solicitud aquí
-  console.error('Error en la solicitud. Estado:', textStatus, 'Error:', errorThrown);
-});*/
 
 function peticionAjax(url, metodo, datos, exitoCallback, errorCallback) {
     $.ajax({

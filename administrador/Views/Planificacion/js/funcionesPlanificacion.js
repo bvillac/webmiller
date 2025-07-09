@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // La variable existe EDITAR
     fntupdateInstructor(resultInst);
     fntupdateSalones(resultSalon);
-    generarPlanificiacionEdit("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaIni,fechaFin);
+    generarPlanificiacionEdit("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   } else {
     // La variable no existe NUEVO
     //console.log("es nuevo");
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // La variable existe EDITAR
     fntupdateInstructor(resultInst);
     fntupdateSalones(resultSalon);
-    generarPlanificiacionAut("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaIni,fechaFin);
+    generarPlanificiacionAut("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   } else {
     // La variable no existe NUEVO
     //console.log("es nuevo");
@@ -169,19 +169,19 @@ $(document).ready(function () {
   });
 
   $("#btn_siguienteEdit").click(function () {
-    generarPlanificiacionEdit("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaIni,fechaFin);
+    generarPlanificiacionEdit("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   });
   $("#btn_anteriorEdit").click(function () {
-    generarPlanificiacionEdit("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaIni,fechaFin);
+    generarPlanificiacionEdit("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   });
 
 
   //Autorizados
   $("#btn_siguienteAut").click(function () {
-    generarPlanificiacionAut("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaIni,fechaFin);
+    generarPlanificiacionAut("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   });
   $("#btn_anteriorAut").click(function () {
-    generarPlanificiacionAut("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaIni,fechaFin);
+    generarPlanificiacionAut("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   });
 
   $("#cmd_clonar").click(function () {
@@ -380,6 +380,7 @@ function generarPlanificiacion(accionMove) {
   // Determinar día abreviado (ej. LU, MA, etc.)
   let nLetIni = $("#FechaDia").text().toUpperCase().substring(0, 2);
   if (nLetIni === "SÁ") nLetIni = "SA";
+  console.log(nLetIni);
 
   let hora = 8;
   for (let i = 0; i < 14; i++) {
@@ -389,7 +390,8 @@ function generarPlanificiacion(accionMove) {
       const nDiaHora = nLetIni + hora;
       const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
       let td;
-      
+console.log(instr["Horario"]);
+console.log(nDiaHora);
       if (existeHorario(instr["Horario"], nDiaHora)) {
         console.log("entro");
         const arrayAula = instr["Salones"].split(",");
@@ -444,18 +446,18 @@ function fnt_eventoPlanificado(comp) {
       }
     }
   } else {
-      //ELIMINAR SALON RESERVADO
-      var respuesta = confirm("Seleccionar un Salón / Eliminar la reservacion.");
-      if (respuesta) {
-        //'" class="btn ms-auto btn-lg btn-light" onclick="fnt_eventoPlanificado(this)">AGREGAR</button></td>';
-        $("#" + comp.id).removeClass("asignado-true").addClass("btn-light");
-        $("#" + comp.id).removeAttr("style");
-        $("#" + comp.id).html("AGREGAR");
-      }
-      nEstado = false;
-      //swal("Información", "Seleccionar un Salón / Eliminar la reservacion.", "info");
-      
-    
+    //ELIMINAR SALON RESERVADO
+    var respuesta = confirm("Seleccionar un Salón / Eliminar la reservacion.");
+    if (respuesta) {
+      //'" class="btn ms-auto btn-lg btn-light" onclick="fnt_eventoPlanificado(this)">AGREGAR</button></td>';
+      $("#" + comp.id).removeClass("asignado-true").addClass("btn-light");
+      $("#" + comp.id).removeAttr("style");
+      $("#" + comp.id).html("AGREGAR");
+    }
+    nEstado = false;
+    //swal("Información", "Seleccionar un Salón / Eliminar la reservacion.", "info");
+
+
   }
 
   if (nEstado) {
@@ -591,7 +593,7 @@ function guardarAll(accion) {
     var Grid = JSON.parse(sessionStorage.dts_PlaTemporal);
     if (Grid.length > 0) {
       let cabPlan = new Object();
-      cabPlan.ids = (accion!='Create')?IdsTemp:0;
+      cabPlan.ids = (accion != 'Create') ? IdsTemp : 0;
       cabPlan.fechaInicio = fechaInicio;
       cabPlan.fechaFin = fechaFin;
       cabPlan.centro = centroAT;
@@ -656,8 +658,8 @@ function fntupdateSalones(resultSalon) {
 }
 
 
-function generarPlanificiacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaIni,fechaFin) {
-  
+function generarPlanificiacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
+
   var tabla = document.getElementById("dts_Planificiacion");
   var nDia = "";
   let salonArray = 0;
@@ -669,17 +671,17 @@ function generarPlanificiacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJue
       if (accionMove == "Edit") {
         fechaDia = obtenerFormatoFecha(fechaIni);
       } else {
-        let estadoFecha = estaEnRango(accionMove,fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
+        let estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
         //console.log(estadoFecha);
-        if(estadoFecha.estado=="FUE"){
-          fechaDia=estadoFecha.fecha;
+        if (estadoFecha.estado == "FUE") {
+          fechaDia = estadoFecha.fecha;
           swal("Atención!", "Fechas fuera de Rango", "error");
           return;
         }
-        
+
       }
 
-   
+
 
       var filaEncabezado = $("<tr></tr>");
       $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
@@ -718,7 +720,7 @@ function generarPlanificiacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJue
           nDia = nSabado.split(",");
           break;
         default:
-          nDia=new Array();
+          nDia = new Array();
       }
       var tabla = $("#dts_Planificiacion tbody");
       $("#dts_Planificiacion tbody").html("");
@@ -817,35 +819,35 @@ function fntDeletePlanificacion(ids) {
   });
 }
 
-function fntSaveClonar(){
-    let accion="";
-    var dataObj = new Object();
-    dataObj.ids = document.querySelector('#txth_ids').value;
-    dataObj.CentroAtencionID = $('#cmb_CentroAtencion').val();
-    dataObj.fecIni = $("#dtp_fecha_desde").val();
-    dataObj.fecFin = $("#dtp_fecha_hasta").val();
-    let link = base_url + '/Planificacion/clonar';
-    $.ajax({
-        type: 'POST',
-        url: link,
-        data: {
-            "data": JSON.stringify(dataObj),
-            "accion": accion
-        },
-        success: function (data) {
-            if (data.status) {
-                //sessionStorage.removeItem('cabeceraOrden');
-                swal("Clonado!", data.msg, "success");
-                tablePlanificacion.api().ajax.reload(function () { });
-                $('#modalFormClonar').modal('hide');
-                //$('#modalFormClonar').modal('dispose');
-            } else {
-                swal("Atención!", data.msg, "error");
-            }
-        },
-        dataType: "json"
-    });
-    
+function fntSaveClonar() {
+  let accion = "";
+  var dataObj = new Object();
+  dataObj.ids = document.querySelector('#txth_ids').value;
+  dataObj.CentroAtencionID = $('#cmb_CentroAtencion').val();
+  dataObj.fecIni = $("#dtp_fecha_desde").val();
+  dataObj.fecFin = $("#dtp_fecha_hasta").val();
+  let link = base_url + '/Planificacion/clonar';
+  $.ajax({
+    type: 'POST',
+    url: link,
+    data: {
+      "data": JSON.stringify(dataObj),
+      "accion": accion
+    },
+    success: function (data) {
+      if (data.status) {
+        //sessionStorage.removeItem('cabeceraOrden');
+        swal("Clonado!", data.msg, "success");
+        tablePlanificacion.api().ajax.reload(function () { });
+        $('#modalFormClonar').modal('hide');
+        //$('#modalFormClonar').modal('dispose');
+      } else {
+        swal("Atención!", data.msg, "error");
+      }
+    },
+    dataType: "json"
+  });
+
 }
 
 
@@ -898,7 +900,7 @@ function fntAutorizarPlanificacion(ids) {
 
 //AUTORIZADOS
 
-function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaIni,fechaFin) {
+function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
   var tabla = document.getElementById("dts_PlanificiacionAut");
   var nDia = "";
   let salonArray = 0;
@@ -920,14 +922,14 @@ function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJuev
       if (accionMove == "Edit") {
         fechaDia = obtenerFormatoFecha(fechaIni);
       } else {
-        let estadoFecha = estaEnRango(accionMove,fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
+        let estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
         //console.log(estadoFecha);
-        if(estadoFecha.estado=="FUE"){
-          fechaDia=estadoFecha.fecha;
+        if (estadoFecha.estado == "FUE") {
+          fechaDia = estadoFecha.fecha;
           swal("Atención!", "Fechas fuera de Rango", "error");
           return;
         }
-        
+
       }
 
       var filaEncabezado = $("<tr></tr>");
@@ -967,7 +969,7 @@ function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJuev
           nDia = nSabado.split(",");
           break;
         default:
-          nDia=new Array();
+          nDia = new Array();
       }
       var tabla = $("#dts_PlanificiacionAut tbody");
       $("#dts_PlanificiacionAut tbody").html("");
@@ -989,11 +991,11 @@ function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJuev
             let objSalon = buscarSalonColor(idsSalon);
             idPlan += "_" + objSalon["ids"]; //Agrega el Id del Salon
             fila += "<td>";
-            fila +='<button type="button" id="' + idPlan +'" class="btn ms-auto btn-lg asignado-true" style="color:white;background-color:' +objSalon["Color"] +'" >' + objSalon["Nombre"] + "</button>";
+            fila += '<button type="button" id="' + idPlan + '" class="btn ms-auto btn-lg asignado-true" style="color:white;background-color:' + objSalon["Color"] + '" >' + objSalon["Nombre"] + "</button>";
             fila += "</td>";
           } else {
             //fila +='<td><button type="button" id="' +idPlan + '" class="btn ms-auto btn-lg btn-light" onclick="fnt_eventoPlanificado(this)">AGREGAR</button></td>';
-            fila +='<td></td>';
+            fila += '<td></td>';
           }
         }
         fila += "</tr>";
