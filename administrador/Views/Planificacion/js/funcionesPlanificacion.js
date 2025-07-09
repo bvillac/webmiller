@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // La variable existe EDITAR
     fntupdateInstructor(resultInst);
     fntupdateSalones(resultSalon);
-    generarPlanificiacionEdit("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionEdit("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   } else {
     // La variable no existe NUEVO
     //console.log("es nuevo");
@@ -169,10 +169,10 @@ $(document).ready(function () {
   });
 
   $("#btn_siguienteEdit").click(function () {
-    generarPlanificiacionEdit("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionEdit("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   });
   $("#btn_anteriorEdit").click(function () {
-    generarPlanificiacionEdit("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionEdit("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   });
 
 
@@ -362,7 +362,7 @@ function generarPlanificacion(accionMove) {
     }
     fechaDia = estadoFecha.fecha;
   }
-  alert("LLEGO: " + fechaDia);
+
 
   // Generar encabezado
   const filaEncabezado = $("<tr></tr>").append("<th>Horas</th>");
@@ -420,16 +420,30 @@ function obtenerCodigoDiaAbreviado(texto) {
   }
 }*/
 
+function obtenerHorarioCoincidente(nDiaHora) {
+  const plaTemporal = sessionStorage.dts_PlaTemporal
+    ? JSON.parse(sessionStorage.dts_PlaTemporal)
+    : [];
+
+  for (const item of plaTemporal) {
+    const coincidencia = item.horario
+      .split(',')
+      .find(h => h.startsWith(nDiaHora));
+
+    if (coincidencia) return coincidencia;
+  }
+
+  return null; // No encontrado
+}
+
+
+
+
 function generarCeldaHorario(nLetIni, hora, instr) {
   const nDiaHora = nLetIni + hora;
   const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
 
-  const plaTemporal = sessionStorage.dts_PlaTemporal ? JSON.parse(sessionStorage.dts_PlaTemporal) : [];
-
-  // Buscar reserva temporal del instructor para este día y hora
-  const reservaTemporal = plaTemporal.find(item =>
-    item.DiaHora === nDiaHora && item.ids === instr["ids"]
-  );
+  const reservaTemporal = obtenerHorarioCoincidente(idBase);
 
   if (existeHorario(instr["Horario"], nDiaHora)) {
     const salon = buscarSalonColor(instr["Salones"].split(",")[0]);
@@ -442,9 +456,10 @@ function generarCeldaHorario(nLetIni, hora, instr) {
           ${salon["Nombre"]}
         </button>
       </td>`;
-  } else if (reservaTemporal) {
-    const salon = buscarSalonColor(reservaTemporal.idsSalon);
-    const idPlan = `${idBase}_${salon["ids"]}`;
+  } else if (reservaTemporal) {//Verifica si existe una reserva temporal
+    const idPlan = reservaTemporal;
+    const idsSalon = idPlan.split("_").pop(); // retorna el último elemento del idPlan
+    const salon = buscarSalonColor(idsSalon);
     return `
       <td>
         <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
@@ -473,7 +488,7 @@ function existeHorario(nHorArray, nDiaHora) {
 
 function buscarSalonColor(ids) {
   const Grid = sessionStorage.dts_SalonCentro ? JSON.parse(sessionStorage.dts_SalonCentro) : [];
-  return Grid.find(salon => salon["ids"] == ids) || {};
+  return Grid.find(salon => salon["ids"] == ids) || 0;
 }
 
 function fnt_eventoPlanificado(comp) {
@@ -542,73 +557,6 @@ function openModalSalon(comp) {
   //$('#modalFormSalon').modal('show');
 }
 
-/*function objDataRow(nLetIni) {
-  let selecionados = "";
-  $("#dts_Planificiacion .asignado-true").each(function (index, boton) {
-    var botonId = $(boton).attr("id");
-    selecionados += botonId + ",";
-    //console.log('ID del botón:', botonId);
-  });
-  selecionados = selecionados.slice(0, selecionados.length - 1); //Quitar la ultima coma
-  //let nLetIni = $('#FechaDia').html().toUpperCase();
-  //nLetIni = nLetIni.substring(0, 2);
-  //nLetIni = (nLetIni == "SÁ") ? "SA" : nLetIni;//Se cambia por la Tilde
-  let rowGrid = new Object();
-  rowGrid.dia = nLetIni;
-  rowGrid.horario = selecionados;
-  rowGrid.fecha = new Date(fechaDia);
-  return rowGrid;
-}*/
-
-/*function guardarTemp() {
-  let nLetIni = $("#FechaDia").html().toUpperCase().substring(0, 2);
-  alert(nLetIni);
-  nLetIni = (nLetIni === "SÁ") ? "SA" : nLetIni; // Ajuste por tilde
-
-  let arrayList = sessionStorage.dts_PlaTemporal
-    ? JSON.parse(sessionStorage.dts_PlaTemporal)
-    : [];
-
-  const nuevaFila = objDataRow(nLetIni);
-
-  // Si ya hay registros
-  if (arrayList.length > 0) {
-    if (codigoExiste(nLetIni, "dia", sessionStorage.dts_PlaTemporal)) {
-      // Ya existe código, agregamos nueva fila
-      arrayList.push(nuevaFila);
-      sessionStorage.dts_PlaTemporal = JSON.stringify(arrayList);
-      swal("Información!", "Planificación Temporal Guardada.", "success");
-    } else {
-      // Confirmar modificación
-      swal(
-        {
-          title: "Actualizar",
-          text: "¿Realmente quiere Modificar Planificación?",
-          type: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Sí, Modificar!",
-          cancelButtonText: "No, cancelar!",
-          closeOnConfirm: false,
-          closeOnCancel: true,
-        },
-        function (isConfirm) {
-          if (isConfirm) {
-            eliminarItemsDia(nLetIni); // Elimina el existente
-            let actualizada = JSON.parse(sessionStorage.dts_PlaTemporal);
-            actualizada.push(nuevaFila);
-            sessionStorage.dts_PlaTemporal = JSON.stringify(actualizada);
-            swal("Información!", "Planificación Temporal Guardada.", "success");
-          }
-        }
-      );
-    }
-  } else {
-    // Primera vez
-    arrayList.push(nuevaFila);
-    sessionStorage.dts_PlaTemporal = JSON.stringify(arrayList);
-    swal("Información!", "Planificación Temporal Guardada.", "success");
-  }
-}*/
 
 function objDataRow(nLetIni) {
   const seleccionados = Array.from($("#dts_Planificiacion .asignado-true"))
@@ -810,8 +758,8 @@ function fntupdateSalones(resultSalon) {
 }
 
 
-function generarPlanificiacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
-
+/*function generarPlanificiacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
+alert("Generar Planificación Editar");
   var tabla = document.getElementById("dts_Planificiacion");
   var nDia = "";
   let salonArray = 0;
@@ -930,7 +878,170 @@ function existeHorarioEditar(nHorArray, nDiaHora) {
   }
   //console.log(`No se encontraron elementos en el array que contengan "${nDiaHora}".`);
   return "0";
+}*/
+
+
+//####################################################
+
+function generarPlanificacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
+
+  const Grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
+  if (!Grid.length) return;
+
+  if (accionMove === "Edit") {
+    fechaDia = obtenerFormatoFecha(fechaIni);
+  } else {
+    const estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
+    if (estadoFecha.estado === "FUE") {
+      
+      swal("Atención!", "Fechas fuera de Rango", "error");
+      return;
+    }
+    fechaDia = estadoFecha.fecha;
+  }
+
+  // Establecer encabezado
+  const encabezado = crearEncabezado(Grid);
+  $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
+  $("#dts_Planificiacion thead").html(encabezado);
+  $("#dts_Planificiacion tbody").empty();
+
+  const nLetIni = obtenerCodigoDiaAbreviado($("#FechaDia").text());
+  const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
+
+  let hora = 8;
+  for (let i = 0; i < 14; i++) {
+    const filaHTML = crearFilaHora(hora, nLetIni, Grid, nDia);
+    $("#dts_Planificiacion tbody").append(filaHTML);
+    hora++;
+  }
 }
+
+function crearEncabezado(Grid) {
+  const fila = $("<tr></tr>").append("<th>Horas</th>");
+  Grid.forEach(instr => {
+    fila.append(`<th>${instr.Nombre.substring(0, 15).toUpperCase()}</th>`);
+  });
+  return fila;
+}
+
+function obtenerCodigoDiaAbreviado(texto) {
+  let code = texto.toUpperCase().substring(0, 2);
+  return code === "SÁ" ? "SA" : code;
+}
+
+function obtenerDiaSeleccionado(nLetIni, dias) {
+  switch (nLetIni) {
+    case "LU": return dias.nLunes.split(",");
+    case "MA": return dias.nMartes.split(",");
+    case "MI": return dias.nMiercoles.split(",");
+    case "JU": return dias.nJueves.split(",");
+    case "VI": return dias.nViernes.split(",");
+    case "SA": return dias.nSabado.split(",");
+    case "DO": return dias.nDomingo.split(",");
+    default: return [];
+  }
+}
+
+function crearFilaHora(hora, nLetIni, gridInstructores, horariosDelDia) {
+  let filaHTML = `<tr><td>${hora}:00</td>`;
+
+  gridInstructores.forEach(instr => {
+    const baseId = `${nLetIni}_${hora}_${instr.ids}`;
+    const coincidencias = existeHorarioEditar(horariosDelDia, baseId);
+
+    const celda = coincidencias !== "0"
+      ? crearCeldaAsignada(baseId, coincidencias[0])
+      : crearCeldaDisponible(baseId);
+
+    filaHTML += celda;
+  });
+
+  filaHTML += "</tr>";
+  return filaHTML;
+}
+
+
+function crearCeldaAsignada(baseId, coincidencia) {
+  const partes = coincidencia.split("_");
+  const idSalon = partes[3];
+  const objSalon = buscarSalonColor(idSalon);
+
+  if (!objSalon || !objSalon.ids || !objSalon.Color) {
+    return `<td><span class="text-danger">Salón inválido</span></td>`;
+  }
+
+  const idPlan = `${baseId}_${objSalon.ids}`;
+
+  return `
+    <td>
+      <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
+        style="color:white; background-color:${objSalon.Color}"
+        onclick="fnt_eventoPlanificado(this)">
+        ${objSalon.Nombre}
+      </button>
+    </td>`;
+}
+
+function crearCeldaDisponible(idPlan) {
+  return `
+    <td>
+      <button type="button" id="${idPlan}" class="btn ms-auto btn-lg btn-light"
+        onclick="fnt_eventoPlanificado(this)">
+        AGREGAR
+      </button>
+    </td>`;
+}
+
+
+
+/*function crearFilaHora(hora, nLetIni, Grid, nDiaArray) {
+  let fila = `<tr><td>${hora}:00</td>`;
+
+  Grid.forEach(instr => {
+    let idPlan = `${nLetIni}_${hora}_${instr.ids}`;
+    const coincidencias = existeHorarioEditar(nDiaArray, idPlan);
+    let td = "";
+
+    if (coincidencias !== "0") {
+      const salonArray = coincidencias[0].split("_");
+      const idSalon = salonArray[3];
+      const objSalon = buscarSalonColor(idSalon);
+      idPlan += `_${objSalon.ids}`;
+
+      td = `
+        <td>
+          <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
+            style="color:white; background-color:${objSalon.Color}"
+            onclick="fnt_eventoPlanificado(this)">
+            ${objSalon.Nombre}
+          </button>
+        </td>`;
+    } else {
+      td = `
+        <td>
+          <button type="button" id="${idPlan}" class="btn ms-auto btn-lg btn-light"
+            onclick="fnt_eventoPlanificado(this)">
+            AGREGAR
+          </button>
+        </td>`;
+    }
+
+    fila += td;
+  });
+
+  fila += "</tr>";
+  return fila;
+}*/
+
+function existeHorarioEditar(nHorArray, nDiaHora) {
+  const resultados = nHorArray.filter(element => element.includes(nDiaHora));
+  return resultados.length > 0 ? resultados : "0";
+}
+
+
+//####################################################
+
 
 //Eliminar Planificacion 
 function fntDeletePlanificacion(ids) {

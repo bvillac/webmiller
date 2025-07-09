@@ -210,10 +210,6 @@ function retonarFecha(fecha) {
 
 // Verifica si una fecha está dentro del rango, o fuera
 function estaEnRango(evento, fecha, fechaInicio, fechaFin) {
-    console.log("Evento: " + evento);
-    console.log("Fecha: " + fecha); 
-    console.log("Fecha Inicio: " + fechaInicio);    
-    console.log("Fecha Fin: " + fechaFin);
     const resultado = {};
   
     // Avanza o retrocede la fecha según el evento
