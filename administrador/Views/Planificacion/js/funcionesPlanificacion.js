@@ -393,8 +393,9 @@ function obtenerCodigoDiaAbreviado(texto) {
   return code === "SÁ" ? "SA" : code;
 }
 
-function generarCeldaHorario(nLetIni, hora, instr) {
+/*function generarCeldaHorario(nLetIni, hora, instr) {
   const nDiaHora = nLetIni + hora;
+  //LU=DIA,HORA=HORA,IDS=ID_INSTRUCTOR,SALONES=SALONES
   const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
 
   if (existeHorario(instr["Horario"], nDiaHora)) {
@@ -417,7 +418,52 @@ function generarCeldaHorario(nLetIni, hora, instr) {
         </button>
       </td>`;
   }
+}*/
+
+function generarCeldaHorario(nLetIni, hora, instr) {
+  const nDiaHora = nLetIni + hora;
+  const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
+
+  const plaTemporal = sessionStorage.dts_PlaTemporal ? JSON.parse(sessionStorage.dts_PlaTemporal) : [];
+
+  // Buscar reserva temporal del instructor para este día y hora
+  const reservaTemporal = plaTemporal.find(item =>
+    item.DiaHora === nDiaHora && item.ids === instr["ids"]
+  );
+
+  if (existeHorario(instr["Horario"], nDiaHora)) {
+    const salon = buscarSalonColor(instr["Salones"].split(",")[0]);
+    const idPlan = `${idBase}_${salon["ids"]}`;
+    return `
+      <td>
+        <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
+          style="color:white; background-color:${salon["Color"]}"
+          onclick="fnt_eventoPlanificado(this)">
+          ${salon["Nombre"]}
+        </button>
+      </td>`;
+  } else if (reservaTemporal) {
+    const salon = buscarSalonColor(reservaTemporal.idsSalon);
+    const idPlan = `${idBase}_${salon["ids"]}`;
+    return `
+      <td>
+        <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
+          style="color:white; background-color:${salon["Color"]}"
+          onclick="fnt_eventoPlanificado(this)">
+          ${salon["Nombre"]}
+        </button>
+      </td>`;
+  } else {
+    return `
+      <td>
+        <button type="button" id="${idBase}" class="btn ms-auto btn-lg btn-light"
+          onclick="fnt_eventoPlanificado(this)">
+          AGREGAR
+        </button>
+      </td>`;
+  }
 }
+
 
 
 
