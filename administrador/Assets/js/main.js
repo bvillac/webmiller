@@ -169,40 +169,53 @@ function retornarDiaLetras(nLetIni) {
 
 //Obtener fecha con Letras
 function obtenerFechaConLetras(fechaDia) {
-    let meses = [
+    const meses = [
         "enero", "febrero", "marzo", "abril", "mayo", "junio",
         "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
     ];
 
-    var fecha = new Date(fechaDia);
-    var dia = fecha.getUTCDate();
-    var numeroDia = fecha.getUTCDay();
-    var nombreDia = obtenerDiaSemana(numeroDia);
-    var mes = meses[fecha.getUTCMonth()];
-    var ano = fecha.getUTCFullYear();
-    return `${nombreDia}, ${dia} de ${mes} de ${ano}`;
+    const diasSemana = [
+        "domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"
+    ];
+
+    const fecha = new Date(fechaDia);
+    const dia = fecha.getDate(); // local
+    const nombreDia = diasSemana[fecha.getDay()];
+    const mes = meses[fecha.getMonth()];
+    const año = fecha.getFullYear();
+
+    return `${capitalizar(nombreDia)}, ${dia} de ${mes} de ${año}`;
+}
+
+function capitalizar(texto) {
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 
 // Convierte string "YYYY-MM-DD" en objeto Date
 function obtenerFormatoFecha(fechaString) {
-    if (!fechaString || typeof fechaString !== "string") return null;
-    const [anio, mes, dia] = fechaString.split("-").map(Number);
-    return new Date(anio, mes - 1, dia); // El mes es base 0
+    //console.log(fechaString);
+    var partesFecha = fechaString.split("-");
+    var fechaReal = new Date(partesFecha[0], partesFecha[1] - 1, partesFecha[2]);
+    return fechaReal;
 }
 
 // Convierte objeto Date a string "YYYY-MM-DD" con ceros a la izquierda
-function retornarFecha(fecha) {
-    const dia = String(fecha.getDate()).padStart(2, "0");
-    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-    const anio = fecha.getFullYear();
-    return `${anio}-${mes}-${dia}`;
+function retonarFecha(fecha) {
+    const dia = String(fecha.getUTCDate()).padStart(2, '0');
+    const mes = String(fecha.getUTCMonth() + 1).padStart(2, '0');
+    const ano = fecha.getUTCFullYear();
+    return `${ano}-${mes}-${dia}`;
 }
 
 // Verifica si una fecha está dentro del rango, o fuera
 function estaEnRango(evento, fecha, fechaInicio, fechaFin) {
+    console.log("Evento: " + evento);
+    console.log("Fecha: " + fecha); 
+    console.log("Fecha Inicio: " + fechaInicio);    
+    console.log("Fecha Fin: " + fechaFin);
     const resultado = {};
-
+  
     // Avanza o retrocede la fecha según el evento
     const nuevaFecha = contarFechaDia(evento, new Date(fecha)); // Clona la fecha para no modificarla directamente
 
@@ -226,6 +239,20 @@ function estaEnRango(evento, fecha, fechaInicio, fechaFin) {
 
     return resultado;
 }
+
+
+
+function contarFechaDia(direccion, fecha) {
+    const nuevaFecha = new Date(fecha);
+    if (direccion === "Next") {
+        nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+    } else if (direccion === "Back") {
+        nuevaFecha.setDate(nuevaFecha.getDate() - 1);
+    }
+    return nuevaFecha;
+}
+
+
 
 
 // Avanza o retrocede una fecha en 1 día
@@ -256,15 +283,15 @@ function codigoExiste(value, property, lista) {
 function retornarIndexArray(array, property, value) {
     if (!Array.isArray(array)) return -1;
     return array.findIndex(item => item[property] == value);
-  }
-  
-  // Elimina todos los elementos del array que coincidan con la propiedad y valor
-  function findAndRemove(array, property, value) {
+}
+
+// Elimina todos los elementos del array que coincidan con la propiedad y valor
+function findAndRemove(array, property, value) {
     if (!Array.isArray(array)) return [];
-  
+
     return array.filter(item => item[property] != value);
-  }
-  
+}
+
 
 
 

@@ -147,13 +147,13 @@ $(document).ready(function () {
   });
 
   $("#btn_generar").click(function () {
-    generarPlanificiacion("Gen");
+    generarPlanificacion("Gen");
   });
   $("#btn_siguiente").click(function () {
-    generarPlanificiacion("Next");
+    generarPlanificacion("Next");
   });
   $("#btn_anterior").click(function () {
-    generarPlanificiacion("Back");
+    generarPlanificacion("Back");
   });
 
   $("#btn_saveTemp").click(function () {
@@ -343,83 +343,82 @@ function fntNameHoras(str) {
 }
 
 /**************** GENERAR PLANIFICACION  ******************/
-function generarPlanificiacion(accionMove) {
+function generarPlanificacion(accionMove) {
   const tabla = $("#dts_Planificiacion");
-  const Grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
+  const grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
 
-  console.log(Grid);
-
-  if (!Grid.length) return;
+  if (!grid.length) return;
 
   const fechaIni = $("#dtp_fecha_desde").val();
   const fechaFin = $("#dtp_fecha_hasta").val();
-
 
   if (accionMove === "Gen") {
     fechaDia = obtenerFormatoFecha(fechaIni);
   } else {
     const estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
     if (estadoFecha.estado === "FUE") {
-      fechaDia = estadoFecha.fecha;
       swal("Atención!", "Fechas fuera de Rango", "error");
       return;
     }
+    fechaDia = estadoFecha.fecha;
   }
+  alert("LLEGO: " + fechaDia);
 
-  // Construcción de encabezado
+  // Generar encabezado
   const filaEncabezado = $("<tr></tr>").append("<th>Horas</th>");
-  Grid.forEach(instr => {
-    filaEncabezado.append(`<th>${instr["Nombre"].substring(0, 15).toUpperCase()}</th>`);//Tamaño de cada nombre
+  grid.forEach(instr => {
+    const nombre = instr["Nombre"].substring(0, 15).toUpperCase();
+    filaEncabezado.append(`<th>${nombre}</th>`);
   });
 
-  console.log(filaEncabezado);
   $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
-  $("#dts_Planificiacion thead").html(filaEncabezado);
-  $("#dts_Planificiacion tbody").empty();
+  tabla.find("thead").html(filaEncabezado);
+  tabla.find("tbody").empty();
 
-  // Determinar día abreviado (ej. LU, MA, etc.)
-  let nLetIni = $("#FechaDia").text().toUpperCase().substring(0, 2);
-  if (nLetIni === "SÁ") nLetIni = "SA";
-  console.log(nLetIni);
+  const nLetIni = obtenerCodigoDiaAbreviado($("#FechaDia").text());
 
-  let hora = 8;
-  for (let i = 0; i < 14; i++) {
+  for (let hora = 8; hora < 22; hora++) {
     const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
-
-    Grid.forEach(instr => {
-      const nDiaHora = nLetIni + hora;
-      const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
-      let td;
-console.log(instr["Horario"]);
-console.log(nDiaHora);
-      if (existeHorario(instr["Horario"], nDiaHora)) {
-        console.log("entro");
-        const arrayAula = instr["Salones"].split(",");
-        const salon = buscarSalonColor(arrayAula[0]);
-        const idPlan = `${idBase}_${salon["ids"]}`;
-        td = `
-          <td>
-            <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
-              style="color:white; background-color:${salon["Color"]}"
-              onclick="fnt_eventoPlanificado(this)">
-              ${salon["Nombre"]}
-            </button>
-          </td>`;
-      } else {
-        td = `
-          <td>
-            <button type="button" id="${idBase}" class="btn ms-auto btn-lg btn-light"
-              onclick="fnt_eventoPlanificado(this)">AGREGAR</button>
-          </td>`;
-      }
-
+    grid.forEach(instr => {
+      const td = generarCeldaHorario(nLetIni, hora, instr);
       fila.append(td);
     });
-
-    $("#dts_Planificiacion tbody").append(fila);
-    hora++;
+    tabla.find("tbody").append(fila);
   }
 }
+
+
+function obtenerCodigoDiaAbreviado(texto) {
+  let code = texto.toUpperCase().substring(0, 2);
+  return code === "SÁ" ? "SA" : code;
+}
+
+function generarCeldaHorario(nLetIni, hora, instr) {
+  const nDiaHora = nLetIni + hora;
+  const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
+
+  if (existeHorario(instr["Horario"], nDiaHora)) {
+    const salon = buscarSalonColor(instr["Salones"].split(",")[0]);
+    const idPlan = `${idBase}_${salon["ids"]}`;
+    return `
+      <td>
+        <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
+          style="color:white; background-color:${salon["Color"]}"
+          onclick="fnt_eventoPlanificado(this)">
+          ${salon["Nombre"]}
+        </button>
+      </td>`;
+  } else {
+    return `
+      <td>
+        <button type="button" id="${idBase}" class="btn ms-auto btn-lg btn-light"
+          onclick="fnt_eventoPlanificado(this)">
+          AGREGAR
+        </button>
+      </td>`;
+  }
+}
+
 
 
 function existeHorario(nHorArray, nDiaHora) {
@@ -497,7 +496,7 @@ function openModalSalon(comp) {
   //$('#modalFormSalon').modal('show');
 }
 
-function objDataRow(nLetIni) {
+/*function objDataRow(nLetIni) {
   let selecionados = "";
   $("#dts_Planificiacion .asignado-true").each(function (index, boton) {
     var botonId = $(boton).attr("id");
@@ -513,9 +512,9 @@ function objDataRow(nLetIni) {
   rowGrid.horario = selecionados;
   rowGrid.fecha = new Date(fechaDia);
   return rowGrid;
-}
+}*/
 
-function guardarTemp() {
+/*function guardarTemp() {
   let nLetIni = $("#FechaDia").html().toUpperCase().substring(0, 2);
   alert(nLetIni);
   nLetIni = (nLetIni === "SÁ") ? "SA" : nLetIni; // Ajuste por tilde
@@ -563,16 +562,123 @@ function guardarTemp() {
     sessionStorage.dts_PlaTemporal = JSON.stringify(arrayList);
     swal("Información!", "Planificación Temporal Guardada.", "success");
   }
+}*/
+
+function objDataRow(nLetIni) {
+  const seleccionados = Array.from($("#dts_Planificiacion .asignado-true"))
+    .map(boton => boton.id)
+    .filter(id => !id.includes("undefined")) // Elimina los inválidos
+    .join(",");
+
+  return {
+    dia: nLetIni,
+    horario: seleccionados,
+    fecha: new Date(fechaDia)//retonarFecha(fechaDia)//
+  };
 }
 
+
+
+function guardarTemp() {
+  const nLetIni = obtenerCodigoDia();
+
+  const arrayList = sessionStorage.dts_PlaTemporal
+    ? JSON.parse(sessionStorage.dts_PlaTemporal)
+    : [];
+
+  const nuevaFila = objDataRow(nLetIni);
+
+  if (arrayList.length === 0) {
+    guardarFila(arrayList, nuevaFila);
+    return;
+  }
+
+  if (codigoExiste(nLetIni, "dia", sessionStorage.dts_PlaTemporal)) {
+    arrayList.push(nuevaFila);
+    actualizarStorage(arrayList);
+    mostrarMensaje("Información!", "Planificación Temporal Guardada.", "success");
+  } else {
+    confirmarModificacion(() => {
+      eliminarItemsDia(nLetIni);
+      const actualizada = JSON.parse(sessionStorage.dts_PlaTemporal);
+      actualizada.push(nuevaFila);
+      actualizarStorage(actualizada);
+      mostrarMensaje("Información!", "Planificación Temporal Guardada.", "success");
+    });
+  }
+}
+
+// 🔹 Funciones auxiliares
+function obtenerCodigoDia() {
+  let codigo = $("#FechaDia").html().toUpperCase().substring(0, 2);
+  return codigo === "SÁ" ? "SA" : codigo;
+}
+
+/**
+ * Agrega una fila a la lista y guarda en sessionStorage.
+ * @param {Array} array - Lista actual.
+ * @param {Object} fila - Fila a insertar.
+ */
+function guardarFila(array, fila) {
+  array.push(fila);
+  actualizarStorage(array);
+  mostrarMensaje("Información", "Planificación Temporal guardada exitosamente.", "success");
+}
+
+/**
+ * Guarda el array en sessionStorage como JSON.
+ * @param {Array} array - Lista a guardar.
+ */
+function actualizarStorage(array) {
+  sessionStorage.setItem("dts_PlaTemporal", JSON.stringify(array));
+}
+
+/**
+ * Muestra una alerta tipo swal.
+ * @param {string} titulo - Título del mensaje.
+ * @param {string} mensaje - Contenido del mensaje.
+ * @param {string} tipo - Tipo de alerta (success, warning, error).
+ */
+function mostrarMensaje(titulo, mensaje, tipo = "info") {
+  swal(titulo, mensaje, tipo);
+}
+
+/**
+ * Muestra una confirmación de modificación y ejecuta un callback si se acepta.
+ * @param {Function} callback - Función a ejecutar si el usuario confirma.
+ */
+function confirmarModificacion(callback) {
+  swal(
+    {
+      title: "Actualizar",
+      text: "¿Desea modificar la planificación existente?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, modificar!",
+      cancelButtonText: "No, cancelar!",
+      closeOnConfirm: false,
+      closeOnCancel: true
+    },
+    function(isConfirm) {
+      if (isConfirm) callback();
+    }
+  );
+}
+
+
+/**
+ * Elimina todos los ítems de un día específico de sessionStorage.
+ * @param {string} nDia - Código del día a eliminar (ej: "LU").
+ */
 function eliminarItemsDia(nDia) {
-  if (!sessionStorage.dts_PlaTemporal) return;
+  const data = sessionStorage.getItem("dts_PlaTemporal");
+  if (!data) return;
 
-  let lista = JSON.parse(sessionStorage.dts_PlaTemporal);
+  const lista = JSON.parse(data);
   const nuevaLista = lista.filter(item => item.dia !== nDia);
-
-  sessionStorage.dts_PlaTemporal = JSON.stringify(nuevaLista);
+  actualizarStorage(nuevaLista);
 }
+
 
 
 //Guardar todo
