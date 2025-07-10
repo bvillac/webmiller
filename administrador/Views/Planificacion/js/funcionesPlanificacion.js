@@ -1163,7 +1163,7 @@ function fntAutorizarPlanificacion(ids) {
 
 //AUTORIZADOS
 
-function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
+/*function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
   var tabla = document.getElementById("dts_PlanificiacionAut");
   var nDia = "";
   let salonArray = 0;
@@ -1171,16 +1171,7 @@ function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJuev
   if (sessionStorage.dts_PlaInstructor) {
     var Grid = JSON.parse(sessionStorage.dts_PlaInstructor);
     if (Grid.length > 0) {
-      /*fechaDia = new Date(fechaDia);      
-      if (accion != "") {
-        if (accion == "Next") {
-          fechaDia.setDate(fechaDia.getDate() + 1);
-        } else {
-          fechaDia.setDate(fechaDia.getDate() - 1);
-        }
-      } else {
-        fechaDia = $("#dtp_fecha_desde").val();
-      }*/
+      
 
       if (accionMove == "Edit") {
         fechaDia = obtenerFormatoFecha(fechaIni);
@@ -1266,6 +1257,90 @@ function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJuev
         numeroHora++;
       }
     }
+  }
+}*/
+
+
+function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
+
+  const tabla = $("#dts_PlanificiacionAut");
+  const tbody = tabla.find("tbody");
+  const thead = tabla.find("thead");
+
+  if (!sessionStorage.dts_PlaInstructor) return;
+
+  const instructores = JSON.parse(sessionStorage.dts_PlaInstructor);
+  if (!instructores.length) return;
+
+  // Determinar fecha actual en planificación
+  let fechaActual = accionMove === "Edit"
+    ? obtenerFormatoFecha(fechaIni)
+    : (() => {
+        const estado = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
+        if (estado.estado === "FUE") {
+          swal("Atención!", "Fechas fuera de Rango", "error");
+          return null;
+        }
+        return estado.fecha;
+      })();
+
+  if (!fechaActual) return;
+
+  $("#FechaDia").html(obtenerFechaConLetras(fechaActual));
+
+  // Obtener día abreviado (ej. LU, MA, MI)
+  let diaAbreviado = $("#FechaDia").html().substring(0, 2).toUpperCase();
+  if (diaAbreviado === "SÁ") diaAbreviado = "SA";
+
+  // Obtener datos del día según abreviación
+  const diasMap = {
+    LU: nLunes,
+    MA: nMartes,
+    MI: nMiercoles,
+    JU: nJueves,
+    VI: nViernes,
+    SA: nSabado,
+    DO: nDomingo
+  };
+
+  const datosDia = diasMap[diaAbreviado] ? diasMap[diaAbreviado].split(",") : [];
+
+  // Generar encabezado
+  const filaEncabezado = $("<tr></tr>").append("<th>Horas</th>");
+  instructores.forEach(instr => {
+    const nombre = instr["Nombre"].substring(0, 15).toUpperCase();
+    filaEncabezado.append(`<th>${nombre}</th>`);
+  });
+  thead.html(filaEncabezado);
+  tbody.empty();
+
+  // Generar filas por hora
+  for (let hora = 8; hora < 22; hora++) {
+    let fila = `<tr><td>${hora}:00</td>`;
+
+    instructores.forEach(instr => {
+      const idPlanBase = `${diaAbreviado}_${hora}_${instr["ids"]}`;
+      const horario = existeHorarioEditar(datosDia, idPlanBase);
+      let celdaHTML = "<td></td>";
+
+      if (horario !== "0") {
+        const salonId = horario[0].split("_")[3];
+        const salon = buscarSalonColor(salonId);
+        const idCompleto = `${idPlanBase}_${salon["ids"]}`;
+        celdaHTML = `
+          <td>
+            <button type="button" id="${idCompleto}" class="btn ms-auto btn-lg asignado-true"
+              style="color:white; background-color:${salon["Color"]}">
+              ${salon["Nombre"]}
+            </button>
+          </td>`;
+      }
+
+      fila += celdaHTML;
+    });
+
+    fila += "</tr>";
+    tbody.append(fila);
   }
 }
 

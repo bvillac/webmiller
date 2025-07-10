@@ -52,13 +52,13 @@ class PlanificacionModel extends MysqlAcademico
 
     public function insertData($Cabecera, $Detalle)
     {
-        $diaLunes="";
-        $diaMartes="";
-        $diaMiercoles="";
-        $diaJueves="";
-        $diaViernes="";
-        $diaSabado="";
-        $diaDomingo="";
+        $diaLunes = "";
+        $diaMartes = "";
+        $diaMiercoles = "";
+        $diaJueves = "";
+        $diaViernes = "";
+        $diaSabado = "";
+        $diaDomingo = "";
         $con = $this->getConexion();
         $sql = "SELECT * FROM " . $this->db_name . ".planificacion_temp 
                   where tpla_estado_logico=1 and cat_id='{$Cabecera['centro']}' and tpla_fecha_incio='{$Cabecera['fechaInicio']}' ";
@@ -194,7 +194,7 @@ class PlanificacionModel extends MysqlAcademico
                 }
             }
 
-            $arrData = array(
+            /*$arrData = array(
                 $Cabecera['fechaInicio'],
                 $Cabecera['fechaFin'],
                 empty(!$diaLunes) ? $diaLunes : "",
@@ -206,7 +206,30 @@ class PlanificacionModel extends MysqlAcademico
                 empty(!$diaDomingo) ? $diaDomingo : "",
                 $rangoDia,
                 retornaUser()
+            );*/
+
+            $diaLunes = $diaLunes ?? "";
+            $diaMartes = $diaMartes ?? "";
+            $diaMiercoles = $diaMiercoles ?? "";
+            $diaJueves = $diaJueves ?? "";
+            $diaViernes = $diaViernes ?? "";
+            $diaSabado = $diaSabado ?? "";
+            $diaDomingo = $diaDomingo ?? "";
+
+            $arrData = array(
+                $Cabecera['fechaInicio'],
+                $Cabecera['fechaFin'],
+                $diaLunes,
+                $diaMartes,
+                $diaMiercoles,
+                $diaJueves,
+                $diaViernes,
+                $diaSabado,
+                $diaDomingo,
+                $rangoDia,
+                retornaUser()
             );
+
 
             $sql = "UPDATE " . $this->db_name . ".planificacion_temp 
                         SET tpla_fecha_incio=?,tpla_fecha_fin=?,
@@ -236,10 +259,10 @@ class PlanificacionModel extends MysqlAcademico
 
     public function clonarRegistro($dataObj)
     {
-        $Ids=$dataObj['ids'];
-        $centroId=$dataObj['CentroAtencionID'];
-        $fecha_desde=$dataObj['fecIni'];
-        $fecha_hasta=$dataObj['fecFin'];
+        $Ids = $dataObj['ids'];
+        $centroId = $dataObj['CentroAtencionID'];
+        $fecha_desde = $dataObj['fecIni'];
+        $fecha_hasta = $dataObj['fecFin'];
         $usuario = retornaUser();
         $sql = "INSERT INTO " . $this->db_name . ".planificacion_temp 
                         (`cat_id`,`tpla_fecha_incio`,`tpla_fecha_fin`,`tpla_lunes`,`tpla_martes`,`tpla_miercoles`,`tpla_jueves`,

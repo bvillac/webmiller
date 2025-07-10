@@ -33,6 +33,7 @@ class AsistenciaModel extends MysqlAcademico
         $sql .= "   order by a.ins_id,CONVERT(a.res_hora , SIGNED) " ;
         $result = $this->select_all($sql);
         //putMessageLogFile($result);
+        $rowData = [];
         $c=-1;
         $aux="";
         $h=0;
