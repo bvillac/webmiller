@@ -131,7 +131,7 @@ $(document).ready(function () {
             }
             response(arrayList);
           } else {
-            response(data.msg);
+            //response(data.msg);
             //limpiarTexbox();
             swal("Atención!", data.msg, "info");
 

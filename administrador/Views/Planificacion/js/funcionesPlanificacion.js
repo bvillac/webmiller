@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // La variable existe EDITAR
     fntupdateInstructor(resultInst);
     fntupdateSalones(resultSalon);
-    generarPlanificiacionAut("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionAut("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   } else {
     // La variable no existe NUEVO
     //console.log("es nuevo");
@@ -178,10 +178,10 @@ $(document).ready(function () {
 
   //Autorizados
   $("#btn_siguienteAut").click(function () {
-    generarPlanificiacionAut("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionAut("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   });
   $("#btn_anteriorAut").click(function () {
-    generarPlanificiacionAut("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionAut("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   });
 
   $("#cmd_clonar").click(function () {
@@ -1261,86 +1261,36 @@ function fntAutorizarPlanificacion(ids) {
 }*/
 
 
-function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
+function generarPlanificacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
 
-  const tabla = $("#dts_PlanificiacionAut");
-  const tbody = tabla.find("tbody");
-  const thead = tabla.find("thead");
+  const Grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
+  if (!Grid.length) return;
 
-  if (!sessionStorage.dts_PlaInstructor) return;
+  if (accionMove === "Edit") {
+    fechaDia = obtenerFormatoFecha(fechaIni);
+  } else {
+    const estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
+    if (estadoFecha.estado === "FUE") {
+      swal("Atención!", "Fechas fuera de Rango", "error");
+      return;
+    }
+    fechaDia = estadoFecha.fecha;
+  }
 
-  const instructores = JSON.parse(sessionStorage.dts_PlaInstructor);
-  if (!instructores.length) return;
+  // Establecer encabezado
+  const encabezado = crearEncabezado(Grid);
+  $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
+  $("#dts_PlanificiacionAut thead").html(encabezado);
+  $("#dts_PlanificiacionAut tbody").empty();
 
-  // Determinar fecha actual en planificación
-  let fechaActual = accionMove === "Edit"
-    ? obtenerFormatoFecha(fechaIni)
-    : (() => {
-        const estado = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
-        if (estado.estado === "FUE") {
-          swal("Atención!", "Fechas fuera de Rango", "error");
-          return null;
-        }
-        return estado.fecha;
-      })();
+  const nLetIni = obtenerCodigoDiaAbreviado($("#FechaDia").text());
+  const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
 
-  if (!fechaActual) return;
-
-  $("#FechaDia").html(obtenerFechaConLetras(fechaActual));
-
-  // Obtener día abreviado (ej. LU, MA, MI)
-  let diaAbreviado = $("#FechaDia").html().substring(0, 2).toUpperCase();
-  if (diaAbreviado === "SÁ") diaAbreviado = "SA";
-
-  // Obtener datos del día según abreviación
-  const diasMap = {
-    LU: nLunes,
-    MA: nMartes,
-    MI: nMiercoles,
-    JU: nJueves,
-    VI: nViernes,
-    SA: nSabado,
-    DO: nDomingo
-  };
-
-  const datosDia = diasMap[diaAbreviado] ? diasMap[diaAbreviado].split(",") : [];
-
-  // Generar encabezado
-  const filaEncabezado = $("<tr></tr>").append("<th>Horas</th>");
-  instructores.forEach(instr => {
-    const nombre = instr["Nombre"].substring(0, 15).toUpperCase();
-    filaEncabezado.append(`<th>${nombre}</th>`);
-  });
-  thead.html(filaEncabezado);
-  tbody.empty();
-
-  // Generar filas por hora
-  for (let hora = 8; hora < 22; hora++) {
-    let fila = `<tr><td>${hora}:00</td>`;
-
-    instructores.forEach(instr => {
-      const idPlanBase = `${diaAbreviado}_${hora}_${instr["ids"]}`;
-      const horario = existeHorarioEditar(datosDia, idPlanBase);
-      let celdaHTML = "<td></td>";
-
-      if (horario !== "0") {
-        const salonId = horario[0].split("_")[3];
-        const salon = buscarSalonColor(salonId);
-        const idCompleto = `${idPlanBase}_${salon["ids"]}`;
-        celdaHTML = `
-          <td>
-            <button type="button" id="${idCompleto}" class="btn ms-auto btn-lg asignado-true"
-              style="color:white; background-color:${salon["Color"]}">
-              ${salon["Nombre"]}
-            </button>
-          </td>`;
-      }
-
-      fila += celdaHTML;
-    });
-
-    fila += "</tr>";
-    tbody.append(fila);
+  let hora = 8;
+  for (let i = 0; i < 14; i++) {
+    const filaHTML = crearFilaHora(hora, nLetIni, Grid, nDia);
+    $("#dts_PlanificiacionAut tbody").append(filaHTML);
+    hora++;
   }
 }
 
