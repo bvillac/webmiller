@@ -156,10 +156,8 @@ class Beneficiario extends Controllers
 
     public function beneficiarioContratoNombres()
 	{
-		putMessageLogFile('llego');
         if ($_POST) {
 			//dep($_POST);
-            putMessageLogFile('llego 2');
 			$Buscar = isset($_POST['buscar']) ? $_POST['buscar'] : "";
 			$request = $this->model->beneficiarioContratoNombres($Buscar);
 			if ($request) {

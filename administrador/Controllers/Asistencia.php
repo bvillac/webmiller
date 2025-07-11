@@ -37,6 +37,7 @@ class Asistencia extends Controllers
 
     public function asistenciaFechaHora(){	
         if ($_POST) {
+
             if (empty($_POST['catId']) || empty($_POST['fechaDia'])) {
                 $arrResponse = array("status" => false, "msg" => 'Datos incorrectos.');
             } else {

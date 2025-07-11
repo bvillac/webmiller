@@ -708,11 +708,27 @@ function anularReservacion(ResId, HorId) {
 function reservarUsuario(accion) {
   const idsModal = $("#txth_idsModal").val();
   const pla_id = $("#txth_ids").val();
-  const ben_id = $("#txth_idBenef").val();
-  const ins_id = $("#txth_idsInstru").val();
+  const ben_id = $("#txth_idBenef").val().trim();
+  if (!ben_id) {
+    swal("Atención!", "Debe seleccionar un beneficiario antes de continuar.", "warning");
+    return;
+  }
   const act_id = $("#cmb_actividad").val();
+  if (!act_id || act_id === "0") {
+    swal("Atención!", "Seleccione una actividad.", "warning");
+    return;
+  }
   const niv_id = $("#cmb_nivel").val();
+  if (!niv_id || niv_id === "0") {
+    swal("Atención!", "Seleccione un nivel.", "warning");
+    return;
+  }
   const uni_id = $("#cmb_NumeroNivel").val();
+  if (!uni_id || uni_id === "0") {
+    swal("Atención!", "Seleccione una unidad.", "warning");
+    return;
+  }
+  const ins_id = $("#txth_idsInstru").val();
   const sal_id = $("#txth_salon").val();
   const hora = $("#txth_hora").val();
   const diaLetra = $("#txth_diaLetra").val();

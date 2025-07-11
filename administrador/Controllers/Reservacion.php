@@ -40,7 +40,7 @@ class Reservacion extends Controllers
                 } else {
                     $arrData[$i]['Estado'] = '<span class="badge badge-danger">Inactivo</span>'; //target="_blanck"  
                 }
-               
+
                 if ($_SESSION['permisosMod']['u']) {
                     $btnOpciones .= ' <a title="Agendar" href="' . base_url() . '/Reservacion/agendar/' . $arrData[$i]['Ids'] . '"  class="btn btn-primary btn-sm"> <i class="fa fa-solid fa-calendar"></i> </a> ';
                 }
@@ -68,11 +68,11 @@ class Reservacion extends Controllers
                 if (empty($data)) {
                     echo "Datos no encontrados";
                 } else {
-                    $data['fechaDia']=$data['pla_fecha_incio'];
-                    $data['accion']="INI";
+                    $data['fechaDia'] = $data['pla_fecha_incio'];
+                    $data['accion'] = "INI";
                     //$data['reservacion'] = $this->model->consultarReservaciones($data);
-                    $data['reservacion'] = $this->model->consultarReservacionFecha($data['cat_id'],$data['pla_id'],$data['pla_fecha_incio']);
-                    $data['numero_reser']=$this->contarResrevados($data['reservacion']);
+                    $data['reservacion'] = $this->model->consultarReservacionFecha($data['cat_id'], $data['pla_id'], $data['pla_fecha_incio']);
+                    $data['numero_reser'] = $this->contarReservados($data['reservacion']);
                     $modelCentro = new CentroAtencionModel();
                     $data['centroAtencion'] = $modelCentro->consultarCentroEmpresa();
                     $modelInstructor = new InstructorModel();
@@ -103,7 +103,7 @@ class Reservacion extends Controllers
         //putMessageLogFile($_GET);
         if ($_GET) {
             //dep($_GET);
-            if (empty($_GET['cat_id']) || empty($_GET['pla_id']) || empty($_GET['accion']) || empty($_GET['fechaDia']) ) {
+            if (empty($_GET['cat_id']) || empty($_GET['pla_id']) || empty($_GET['accion']) || empty($_GET['fechaDia'])) {
                 $arrResponse = array("status" => false, "msg" => 'Datos incorrectos.');
             } else {
                 $request = "";
@@ -113,17 +113,17 @@ class Reservacion extends Controllers
                 $accion = isset($_GET['accion']) ? $_GET['accion'] : "";
                 $fechaDia = isset($_GET['fechaDia']) ? $_GET['fechaDia'] : null;
                 $data = $this->model->consultarDatosId($pla_id);
-                $result=$this->estaEnRango($accion,$fechaDia,$data['pla_fecha_incio'],$data['pla_fecha_fin']);
-               
+                $result = $this->estaEnRango($accion, $fechaDia, $data['pla_fecha_incio'], $data['pla_fecha_fin']);
+
                 //if($result["estado"]=="FUE"){
                 //    $fechaDia=$result["fecha"];
-                    //swal("Atención!", "Fechas fuera de Rango", "error");
+                //swal("Atención!", "Fechas fuera de Rango", "error");
                 //}
-                $fechaDia=$result["fecha"];
-                $data['fechaDia']=$fechaDia;
-                $data['accion']=$accion;
+                $fechaDia = $result["fecha"];
+                $data['fechaDia'] = $fechaDia;
+                $data['accion'] = $accion;
                 $data['reservacion'] = $this->model->consultarReservacionFecha($cat_id, $pla_id, $fechaDia);
-                $data['numero_reser'] = $this->contarResrevados($data['reservacion']);
+                $data['numero_reser'] = $this->contarReservados($data['reservacion']);
 
                 $modelCentro = new CentroAtencionModel();
                 $data['centroAtencion'] = $modelCentro->consultarCentroEmpresa();
@@ -139,15 +139,13 @@ class Reservacion extends Controllers
                 $data['page_name'] = "Agendar";
                 $data['page_title'] = "Agendar <small> " . TITULO_EMPRESA . "</small>";
                 $this->views->getView($this, "agendar", $data);
-
-                
             }
 
         }
         die();
     }
 
-    private function contarResrevados($data)
+    /*private function contarReservados($data)
     {
         $numRes = [];
         $c = 0;
@@ -167,9 +165,30 @@ class Reservacion extends Controllers
             }
             $numRes = $rowData;
         }
-        
+
         return $numRes;
+    }*/
+
+    private function contarReservados($data)
+    {
+        $conteo = [];
+
+        foreach ($data as $item) {
+            $id = $item['Ids'];
+            if (!isset($conteo[$id])) {
+                $conteo[$id] = [
+                    'Ids' => $id,
+                    'count' => 1
+                ];
+            } else {
+                $conteo[$id]['count']++;
+            }
+        }
+
+        // Reindexar por índice numérico
+        return array_values($conteo);
     }
+
 
     public function reservarBeneficiario()
     {
@@ -212,7 +231,7 @@ class Reservacion extends Controllers
     {
         if ($_POST) {
             //dep($_POST);
-            if (empty($_POST['cat_id']) || empty($_POST['pla_id']) || empty($_POST['fechaDia']) ) {
+            if (empty($_POST['cat_id']) || empty($_POST['pla_id']) || empty($_POST['fechaDia'])) {
                 $arrResponse = array("status" => false, "msg" => 'Datos incorrectos.');
             } else {
                 $request = "";
@@ -221,8 +240,8 @@ class Reservacion extends Controllers
                 $pla_id = isset($_POST['pla_id']) ? $_POST['pla_id'] : "";
                 $fechaDia = isset($_POST['fechaDia']) ? $_POST['fechaDia'] : "";
 
-                $arrData['reservacion'] = $this->model->consultarReservacionFecha($cat_id,$pla_id,$fechaDia);
-                $arrData['numero_reser']= $this->contarResrevados($arrData['reservacion']);
+                $arrData['reservacion'] = $this->model->consultarReservacionFecha($cat_id, $pla_id, $fechaDia);
+                $arrData['numero_reser'] = $this->contarReservados($arrData['reservacion']);
 
                 if (empty($arrData)) {
                     $arrResponse = array('status' => false, 'msg' => 'Datos no encontrados.');
@@ -231,7 +250,7 @@ class Reservacion extends Controllers
                 }
                 echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
             }
-            
+
         }
         die();
     }
@@ -239,7 +258,8 @@ class Reservacion extends Controllers
 
 
 
-    private function contarFechaDia($accionMove,$fecha){
+    private function contarFechaDia($accionMove, $fecha)
+    {
         if ($accionMove == "Next") {
             $fecha->modify('+1 day');
         } else if ($accionMove == "Back") {
@@ -248,35 +268,36 @@ class Reservacion extends Controllers
         return $fecha->format('Y-m-d');
     }
 
-    function estaEnRango($Evento,$fecha, $fechaInicio, $fechaFin) {   
+    function estaEnRango($Evento, $fecha, $fechaInicio, $fechaFin)
+    {
         $fechaInicio = new DateTime($fechaInicio);
         $fechaFin = new DateTime($fechaFin);
         $fecha = new DateTime($fecha);
-        $result=$this->contarFechaDia($Evento,$fecha);
-        if($fecha > $fechaInicio && $fecha < $fechaFin){
+        $result = $this->contarFechaDia($Evento, $fecha);
+        if ($fecha > $fechaInicio && $fecha < $fechaFin) {
             //Dentro del Rengo  
-            $obtResult['estado'] ="OK";
-            $obtResult['fecha'] =$fecha->format('Y-m-d');
-        }  else if ($fecha == $fechaInicio) {
-            $obtResult['estado'] ="INI";
-            $obtResult['fecha'] =$fechaInicio->format('Y-m-d');
+            $obtResult['estado'] = "OK";
+            $obtResult['fecha'] = $fecha->format('Y-m-d');
+        } else if ($fecha == $fechaInicio) {
+            $obtResult['estado'] = "INI";
+            $obtResult['fecha'] = $fechaInicio->format('Y-m-d');
         } else if ($fecha == $fechaFin) {
-            $obtResult['estado'] ="FIN";
-            $obtResult['fecha'] =$fechaFin->format('Y-m-d');
+            $obtResult['estado'] = "FIN";
+            $obtResult['fecha'] = $fechaFin->format('Y-m-d');
         } else if ($fecha < $fechaInicio) {
             //Fuera de Rango
-            $obtResult['estado'] ="FUE";
-            $obtResult['fecha'] =$fechaInicio->format('Y-m-d');
+            $obtResult['estado'] = "FUE";
+            $obtResult['fecha'] = $fechaInicio->format('Y-m-d');
         } else if ($fecha > $fechaFin) {
-            $obtResult['estado'] ="FUE";
-            $obtResult['fecha'] =$fechaFin->format('Y-m-d');
-        }else{
-            $obtResult['estado'] ="INI";
-            $obtResult['fecha'] =$fechaInicio->format('Y-m-d');
+            $obtResult['estado'] = "FUE";
+            $obtResult['fecha'] = $fechaFin->format('Y-m-d');
+        } else {
+            $obtResult['estado'] = "INI";
+            $obtResult['fecha'] = $fechaInicio->format('Y-m-d');
             //obtResult.fecha=0;
         }
         return $obtResult;
-    
+
     }
 
     public function anularReservacion()

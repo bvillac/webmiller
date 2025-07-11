@@ -36,6 +36,7 @@ class ReservacionModel extends MysqlAcademico
         $sql .= "            on a.cat_id=b.cat_id ";
         $sql .= "    where a.pla_estado_logico!=0 and pla_id={$Ids} ";
         $request = $this->select($sql);
+
         return $request;
     }
 
@@ -62,6 +63,7 @@ class ReservacionModel extends MysqlAcademico
         $sql .= "           on a.ben_id=b.ben_id   " ;
         $sql .= "   where a.cat_id={$catId} and a.pla_id={$plaId} and date(a.res_fecha_reservacion) = '{$fecha}' " ; 
         $sql .= "       and a.res_estado_logico!=0  order by a.res_hora,a.ins_id " ;
+putMessageLogFile($sql);        
         $request = $this->select_all($sql);
         return $request;
     }

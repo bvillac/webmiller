@@ -13,7 +13,7 @@ class AsistenciaModel extends MysqlAcademico
         $this->db_nameAdmin = $this->getDbNameMysqlAdmin();
     }
 
-    public function consultarAsistenciaFechaHora($catId,$plaId,$insId,$fecha,$hora)
+    /*public function consultarAsistenciaFechaHora($catId,$plaId,$insId,$fecha,$hora)
     {
         $sql = "SELECT a.res_id,a.cat_id,a.pla_id,a.act_id,d.act_nombre,a.niv_id,f.niv_nombre,a.ben_id,a.ins_id,a.sal_id,e.sal_nombre," ;
         $sql .= "   a.res_fecha_reservacion FechaRes,a.res_unidad,a.res_dia,a.res_hora,a.res_asistencia, CONCAT(c.per_nombre,' ',c.per_apellido) Nombres, " ;
@@ -61,6 +61,8 @@ class AsistenciaModel extends MysqlAcademico
         return $rowData;
     }
 
+
+
     public function retonarHoras($result,$i,$horas,$h){
         $horas[$h]['ResId']=$result[$i]['res_id'];
         $horas[$h]['ResHora']=$result[$i]['res_hora'];
@@ -73,7 +75,98 @@ class AsistenciaModel extends MysqlAcademico
         $horas[$h]['SalNombre']=$result[$i]['sal_nombre'];
         $horas[$h]['Estado']=$result[$i]['res_asistencia'];
         return $horas;
+    }*/
+
+    public function consultarAsistenciaFechaHora($catId, $plaId, $insId, $fecha, $hora)
+    {
+        $db = $this->db_name;
+        $dbAdmin = $this->db_nameAdmin;
+
+        $sql = "
+        SELECT 
+            a.res_id, a.cat_id, a.pla_id, a.act_id, d.act_nombre,
+            a.niv_id, f.niv_nombre, a.ben_id, a.ins_id,
+            a.sal_id, e.sal_nombre, a.res_fecha_reservacion AS FechaRes,
+            a.res_unidad, a.res_dia, a.res_hora, a.res_asistencia,
+            CONCAT(c.per_nombre, ' ', c.per_apellido) AS Nombres,
+            (
+                SELECT CONCAT(z.per_nombre, ' ', z.per_apellido)
+                FROM db_academico.instructor x
+                INNER JOIN db_administrador.persona z ON x.per_id = z.per_id
+                WHERE x.ins_id = a.ins_id
+            ) AS Instructor
+        FROM {$db}.reservacion a
+        INNER JOIN {$db}.beneficiario b ON a.ben_id = b.ben_id
+        INNER JOIN {$dbAdmin}.persona c ON b.per_id = c.per_id
+        INNER JOIN {$db}.actividad d ON d.act_id = a.act_id
+        INNER JOIN {$db}.salon e ON e.sal_id = a.sal_id
+        INNER JOIN {$db}.nivel f ON f.niv_id = a.niv_id
+        WHERE 
+            a.res_estado_logico != 0 
+            AND a.cat_id = {$catId} 
+            AND DATE(a.res_fecha_reservacion) = '{$fecha}'";
+
+        if ($insId !== "0") {
+            $sql .= " AND a.ins_id = {$insId}";
+        }
+        if ($hora !== "0") {
+            $sql .= " AND a.res_hora = {$hora}";
+        }
+
+        $sql .= " ORDER BY a.ins_id, CONVERT(a.res_hora, SIGNED)";
+
+        putMessageLogFile($sql);
+
+        $result = $this->select_all($sql);
+
+        $rowData = [];
+        $horas = [];
+        $currentInsId = null;
+        $index = -1;
+
+        foreach ($result as $i => $row) {
+            if ($row['ins_id'] !== $currentInsId) {
+                $currentInsId = $row['ins_id'];
+                $index++;
+                $horas = [];
+
+                $rowData[$index] = [
+                    'CatId' => $row['cat_id'],
+                    'PlaId' => $row['pla_id'],
+                    'Fecha' => $row['FechaRes'],
+                    'Dia' => $row['res_dia'],
+                    'InsId' => $row['ins_id'],
+                    'InsNombre' => $row['Instructor'],
+                    'Reservado' => []
+                ];
+            }
+
+            // Acumula horas con tu función externa
+            $horas = $this->retonarHoras($result, $i, $horas, count($horas));
+            $rowData[$index]['Reservado'] = $horas;
+        }
+
+        return $rowData;
     }
+    public function retonarHoras($result, $i, $horas, $h)
+    {
+        $horas[$h] = [
+            'ResId' => $result[$i]['res_id'],
+            'ResHora' => $result[$i]['res_hora'],
+            'ActNombre' => $result[$i]['act_nombre'],
+            'NivNombre' => $result[$i]['niv_nombre'],
+            'ResUnidad' => $result[$i]['res_unidad'],
+            'BenId' => $result[$i]['ben_id'],
+            'BenNombre' => $result[$i]['Nombres'],
+            'SalId' => $result[$i]['sal_id'],
+            'SalNombre' => $result[$i]['sal_nombre'],
+            'Estado' => $result[$i]['res_asistencia'],
+        ];
+
+        return $horas;
+    }
+
+
 
 
     public function marcarAsistencia(int $Ids)
@@ -82,7 +175,7 @@ class AsistenciaModel extends MysqlAcademico
         $con = $this->getConexion();
         $sql = "SELECT * FROM " . $this->db_name . ".reservacion where res_id='{$Ids}' AND res_estado_logico=1";
         $request = $this->select($sql);
-        if (!empty($request)) { 
+        if (!empty($request)) {
             $con->beginTransaction();
             try {
                 //Insertar Control Academico
@@ -118,7 +211,7 @@ class AsistenciaModel extends MysqlAcademico
                 $sql = "UPDATE " . $this->db_name . ".reservacion SET res_asistencia = ?,res_usuario_modificacion='{$usuario}',
                             res_fecha_modificacion = CURRENT_TIMESTAMP() WHERE res_id = {$Ids} ";
                 $arrData = array("A");
-                $request = $this->updateConTrasn($con,$sql, $arrData);
+                $request = $this->updateConTrasn($con, $sql, $arrData);
 
                 $con->commit();
                 $arroout["status"] = true;
