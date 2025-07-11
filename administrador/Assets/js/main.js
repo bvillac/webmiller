@@ -169,23 +169,25 @@ function retornarDiaLetras(nLetIni) {
 
 //Obtener fecha con Letras
 function obtenerFechaConLetras(fechaDia) {
-    const meses = [
-        "enero", "febrero", "marzo", "abril", "mayo", "junio",
-        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
-    ];
+  const meses = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+  ];
 
-    const diasSemana = [
-        "domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"
-    ];
+  const diasSemana = [
+    "domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"
+  ];
 
-    const fecha = new Date(fechaDia);
-    const dia = fecha.getDate(); // local
-    const nombreDia = diasSemana[fecha.getDay()];
-    const mes = meses[fecha.getMonth()];
-    const año = fecha.getFullYear();
+  // Forzar interpretación en zona local
+  const fecha = new Date(fechaDia.replace(/-/g, '/'));
+  const dia = fecha.getDate();
+  const nombreDia = diasSemana[fecha.getDay()];
+  const mes = meses[fecha.getMonth()];
+  const año = fecha.getFullYear();
 
-    return `${capitalizar(nombreDia)}, ${dia} de ${mes} de ${año}`;
+  return `${capitalizar(nombreDia)}, ${dia} de ${mes} de ${año}`;
 }
+
 
 function capitalizar(texto) {
     return texto.charAt(0).toUpperCase() + texto.slice(1);

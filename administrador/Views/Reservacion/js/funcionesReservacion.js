@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   if (typeof accionFormAut !== "undefined") {
-    //console.log("ingresoa ="+fechaDia);
+    //Ingresa para agendar la fecha de inicio de la planificacion
     fntupdateInstructor(resultInst);
     fntupdateSalones(resultSalon);
     fntupdateNivel(resultNivel);
