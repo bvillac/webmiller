@@ -46,7 +46,7 @@ class AcademicoModel extends MysqlAcademico
     {
         $sql = "select a.cac_id Ids,a.ben_id BenId,b.niv_nombre Nivel,a.cac_unidad Unidad,c.act_nombre Actividad,a.cac_hora Hora, ";
         $sql .= "   CONCAT(p.per_nombre,' ',p.per_apellido) Instructor,date(a.cac_fecha_creacion) FechaAsistencia,date(a.cac_fecha_evaluacion) FechaEvaluacion, ";
-        $sql .= "   d.val_nombre Valoracion,a.cac_valoracion Valor,a.cac_observacion Observacion, ";
+        $sql .= "   d.val_nombre Valoracion,a.cac_valoracion Valor,a.cac_observacion Observacion ";
         $sql .= " from db_academico.control_academico a ";
         $sql .= "    inner join " . $this->db_name . ".nivel b on a.niv_id=b.niv_id ";
         $sql .= "    inner join " . $this->db_name . ".actividad c on a.act_id=c.act_id ";
