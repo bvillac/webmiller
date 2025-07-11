@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
     fntupdateNivel(resultNivel);
     fntupdateReservacion(reservacion);
     fntReservacionCount(resultNumRes);
-    generarPlanificiacionAut(nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaDia);
+    generarPlanificiacionAut(nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaDia);
   }
 
 
@@ -59,15 +59,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 $(document).ready(function () {
+  obtenerBeneficiarioDeSesion();
 
-  $("#btn_siguienteAut").click(function () {   
+  $("#btn_siguienteAut").click(function () {
     var parametros = {
       cat_id: CentroIds,
       pla_id: IdsTemp,
       accion: "Next",
       fechaDia: fechaDia
     };
-    var url = base_url+'/Reservacion/moverAgenda?'+ new URLSearchParams(parametros).toString();
+    var url = base_url + '/Reservacion/moverAgenda?' + new URLSearchParams(parametros).toString();
     // Redirigir a la nueva URL
     window.location.href = url;
   });
@@ -78,7 +79,7 @@ $(document).ready(function () {
       accion: "Back",
       fechaDia: fechaDia
     };
-    var url = base_url+'/Reservacion/moverAgenda?'+ new URLSearchParams(parametros).toString();
+    var url = base_url + '/Reservacion/moverAgenda?' + new URLSearchParams(parametros).toString();
     // Redirigir a la nueva URL
     window.location.href = url;
   });
@@ -87,14 +88,14 @@ $(document).ready(function () {
     reservarUsuario('Create');
   });
 
-  $('#cmb_nivel').change(function () {        
-    if ($('#cmb_nivel').val() != 0) {        
-        fntLLenarNivel();
+  $('#cmb_nivel').change(function () {
+    if ($('#cmb_nivel').val() != 0) {
+      fntLLenarNivel();
     } else {
-        $('#cmb_NumeroNivel option').remove();
-        swal("Error", "Selecione Libro o Nivel" , "error");
+      $('#cmb_NumeroNivel option').remove();
+      swal("Error", "Selecione Libro o Nivel", "error");
     }
-});
+  });
 
 
 
@@ -120,12 +121,10 @@ $(document).ready(function () {
               rowResult.value = objeto.NumeroContrato;
 
               rowResult.id = objeto.Ids;
-              rowResult.ContId=objeto.ContId;
+              rowResult.ContId = objeto.ContId;
               rowResult.Cedula = objeto.Cedula;
+              rowResult.NumeroContrato = objeto.NumeroContrato;
               rowResult.Nombres = objeto.Nombre + " " + objeto.Apellido;;
-              //rowResult.FechaNacimiento = objeto.FechaNacimiento;
-              //rowResult.Telefono = objeto.Telefono;
-              //rowResult.Edad = objeto.Edad;
               arrayList[c] = rowResult;
               c += 1;
             }
@@ -145,10 +144,8 @@ $(document).ready(function () {
       openModalPagos(ui.item.ContId);
       $('#txt_NombreBeneficirio').val(ui.item.Nombres);
       $('#txt_CodigoBeneficiario').val(ui.item.Cedula);
-      //$('#txt_EdadBeneficirio').val(ui.item.Edad);
-      //$('#txt_TelefonoBeneficirio').val(ui.item.Telefono);
       $('#txth_idBenef').val(ui.item.id);
-
+      guardarBeneficiarioEnSesion(ui.item.ContId, ui.item.Nombres, ui.item.Cedula, ui.item.NumeroContrato, ui.item.id);
     }
   });
 
@@ -178,9 +175,6 @@ $(document).ready(function () {
               rowResult.Cedula = objeto.Cedula;
               rowResult.Nombres = objeto.Nombre + " " + objeto.Apellido;
               rowResult.NumeroContrato = objeto.NumeroContrato;
-              //rowResult.FechaNacimiento = objeto.FechaNacimiento;
-              //rowResult.Telefono = objeto.Telefono;
-              //rowResult.Edad = objeto.Edad;
               arrayList[c] = rowResult;
               c += 1;
             }
@@ -199,14 +193,45 @@ $(document).ready(function () {
       $('#txt_NombreBeneficirio').val(ui.item.Nombres);
       $('#txt_NumeroContrato').val(ui.item.NumeroContrato);
       $('#txth_idBenef').val(ui.item.id);
-      //$('#txt_EdadBeneficirio').val(ui.item.Edad);
-      //$('#txt_TelefonoBeneficirio').val(ui.item.Telefono);
-      //$('#txth_per_idBenef').val(ui.item.id);
+      guardarBeneficiarioEnSesion(ui.item.ContId, ui.item.Nombres, ui.item.Cedula, ui.item.NumeroContrato, ui.item.id);
 
     }
   });
 
 });
+
+function limpiarBenef() {
+  sessionStorage.removeItem('beneficiarioSeleccionado');
+  $("#txth_idBenef").val("");
+  $("#txt_NumeroContrato").val("");
+  $("#txt_CodigoBeneficiario").val("");
+  $("#txt_NombreBeneficirio").val("");
+}
+
+function guardarBeneficiarioEnSesion(ContId, Nombres, Cedula, NumContrato, idBenef) {
+  const beneficiario = {
+    ContId: ContId,
+    Nombres: Nombres,
+    Cedula: Cedula,
+    NContrato: NumContrato,
+    ididBenef: idBenef
+  };
+
+  sessionStorage.setItem('beneficiarioSeleccionado', JSON.stringify(beneficiario));
+}
+
+function obtenerBeneficiarioDeSesion() {
+  const datosBenef = sessionStorage.getItem('beneficiarioSeleccionado');
+
+  if (datosBenef) {
+    const beneficiario = JSON.parse(datosBenef);
+    $('#txt_NombreBeneficirio').val(beneficiario.Nombres);
+    $('#txt_CodigoBeneficiario').val(beneficiario.Cedula);
+    $('#txt_NumeroContrato').val(beneficiario.NContrato);
+    $('#txth_idBenef').val(beneficiario.ididBenef);
+  }
+}
+
 
 function buscarNivel(ids) {
   if (sessionStorage.dts_Nivel) {
@@ -223,14 +248,14 @@ function buscarNivel(ids) {
 }
 
 
-function fntLLenarNivel() {  
-  let objNivel=buscarNivel($('#cmb_nivel').val());
+function fntLLenarNivel() {
+  let objNivel = buscarNivel($('#cmb_nivel').val());
   $("#cmb_NumeroNivel").empty();
   for (var i = objNivel["Uinicio"]; i <= objNivel["Ufin"]; i++) {
     // Crea una opción con el valor y texto igual al número del contador
     var option = $("<option>", {
       value: i,
-      text: "Unidad "+ i
+      text: "Unidad " + i
     });
 
     // Agrega la opción al select usando jQuery
@@ -324,7 +349,7 @@ function fntReservacionCount(reservacion) {
   for (var i = 0; i < reservacion.length; i++) {
     let rowInst = new Object();
     rowInst.ids = reservacion[i].Ids;
-    rowInst.count = reservacion[i].count;    
+    rowInst.count = reservacion[i].count;
     arrayList[c] = rowInst;
     c += 1;
   }
@@ -335,8 +360,8 @@ function fntReservacionCount(reservacion) {
 
 
 
-function generarPlanificiacionAut(nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo,fechaDia) {
-  
+function generarPlanificiacionAut(nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaDia) {
+
   var tabla = document.getElementById("dts_PlanificiacionAut");
   var nDia = "";
   let salonArray = 0;
@@ -385,11 +410,11 @@ function generarPlanificiacionAut(nLunes, nMartes, nMiercoles, nJueves, nViernes
           nDia = nDomingo.split(",");
           break;
         default:
-          nDia=new Array();
+          nDia = new Array();
       }
       var tabla = $("#dts_PlanificiacionAut tbody");
       $("#dts_PlanificiacionAut tbody").html("");
-      
+
       for (var i = 0; i < 14; i++) {
         //GENERA LAS FILAS
         var fila = "<tr><td>" + numeroHora + ":00</td>";
@@ -405,28 +430,28 @@ function generarPlanificiacionAut(nLunes, nMartes, nMiercoles, nJueves, nViernes
           }
 
           if (nExiste) {
-            let objSalon = buscarSalonColor(idsSalon);                
+            let objSalon = buscarSalonColor(idsSalon);
             idPlan += "_" + objSalon["ids"]; //Agrega el Id del Salon
-            
-            let objCount=buscarCountAlumnos(idPlan);
-            let totalRes=(objCount!=0)?objCount["count"]:0;    
+
+            let objCount = buscarCountAlumnos(idPlan);
+            let totalRes = (objCount != 0) ? objCount["count"] : 0;
             fila += "<td>";
             fila += '<button type="button" id="' + idPlan + '" class="btn ms-auto btn-lg asignado-true" onclick="openModalAgenda(this)" ';
-            fila += '    style="color:white;background-color:' + objSalon["Color"] + '" >' + objSalon["Nombre"] + ' <span id="tot_' + idPlan + '" class="badge badge-light">'+ totalRes +'</span></button>';
+            fila += '    style="color:white;background-color:' + objSalon["Color"] + '" >' + objSalon["Nombre"] + ' <span id="tot_' + idPlan + '" class="badge badge-light">' + totalRes + '</span></button>';
             fila += "</td>";
           } else {
             //fila +='<td><button type="button" id="' +idPlan + '" class="btn ms-auto btn-lg btn-light" onclick="fnt_eventoPlanificado(this)">AGREGAR</button></td>';
-            fila +='<td></td>';
+            fila += '<td></td>';
           }
         }
         fila += "</tr>";
         tabla.append(fila);
         numeroHora++;
       }
-      
+
     }
   }
-  
+
 }
 
 function existeHorarioEditar(nHorArray, nDiaHora) {
@@ -483,7 +508,7 @@ function buscarInstructor(ids) {
   return 0;
 }
 
-function openModalAgenda(comp) { //
+/*function openModalAgenda(comp) { //
 
   if($("#txt_CodigoBeneficiario").val() == "" || $("#txt_NombreBeneficirio").val() == "" ){
     swal("Atención!", "Seleccionar un Beneficiarios", "info");
@@ -511,21 +536,21 @@ function openModalAgenda(comp) { //
   document.querySelector('#titleModal').innerHTML = "Día: " + nDiaLetra + " ->  Hora: " + Hora + " -> Salón: " + objSalon["Nombre"] + " -> Instructor: " + objInstructor["Nombre"];
   document.querySelector("#formAgenda").reset();
   $('#modalFormAgenda').modal('show');
-}
+}*/
 
 function cargarBeneficiarios(ids) {
-  let option="";
+  let option = "";
   if (sessionStorage.dts_Reservacion) {
     var Grid = JSON.parse(sessionStorage.dts_Reservacion);
     if (Grid.length > 0) {
       $("#list_beneficiarios").empty();
       for (var i = 0; i < Grid.length; i++) {
-        if (Grid[i]["ids"] == ids) {        
-                option+='<li class="list-group-item d-flex justify-content-between align-items-center">';
-                  option +=Grid[i]["Nombres"];    
-                  //option +='<span class="badge badge-primary badge-pill">X</span>';
-                  option += ' <a href="#" class="link_delete" onclick="event.preventDefault();anularReservacion(\'' + Grid[i]["res_id"] + '\',\'' +  Grid[i]["ids"] + '\');"><i class="fa fa-trash"></i></a>';
-                option +='</li>';
+        if (Grid[i]["ids"] == ids) {
+          option += '<li class="list-group-item d-flex justify-content-between align-items-center">';
+          option += Grid[i]["Nombres"];
+          //option +='<span class="badge badge-primary badge-pill">X</span>';
+          option += ' <a href="#" class="link_delete" onclick="event.preventDefault();anularReservacion(\'' + Grid[i]["res_id"] + '\',\'' + Grid[i]["ids"] + '\');"><i class="fa fa-trash"></i></a>';
+          option += '</li>';
         }
       }
     }
@@ -533,42 +558,88 @@ function cargarBeneficiarios(ids) {
   $("#list_beneficiarios").append(option);
 }
 
-function anularReservacion(ResId,HorId){
+function openModalAgenda(comp) {
+  const beneficiarioId = $("#txt_CodigoBeneficiario").val();
+  const nombreBeneficiario = $("#txt_NombreBeneficirio").val();
+
+  // Validar beneficiario
+  // if (!beneficiarioId || !nombreBeneficiario) {
+  //   swal("Atención!", "Seleccionar un Beneficiario", "info");
+  //   return;
+  // }
+
+  // Extraer datos del botón
+  const idComp = comp.id;
+  const [letraDia, hora, instructorId, salonId] = idComp.split("_");
+
+  const horaTexto = `${hora}:00`;
+  const diaLetraTexto = retornarDiaLetras(letraDia);
+  const salon = buscarSalonColor(salonId);
+  const instructor = buscarInstructor(instructorId);
+
+  // Asignar datos al formulario
+  $('#txth_idsModal').val(idComp);
+  $('#txth_diaLetra').val(letraDia);
+  $('#txth_hora').val(hora);
+  $('#txth_salon').val(salonId);
+  $('#txt_color').val(salon.Color);
+  $('#lbl_Beneficiario').text(nombreBeneficiario);
+  $('#txth_idsInstru').val(instructor.ids);
+
+  // Cargar beneficiarios relacionados
+  cargarBeneficiarios(idComp);
+
+  // Ajustes visuales del modal
+  $(".modal-header").removeClass("headerUpdate").addClass("headerRegister");
+  $("#btn_reservar").removeClass("btn-info").addClass("btn-primary");
+  $("#btnText").html("Reservar");
+
+  // Título dinámico del modal
+  const titulo = `Día: ${diaLetraTexto} → Hora: ${horaTexto} → Salón: ${salon.Nombre} → Instructor: ${instructor.Nombre}`;
+  $("#titleModal").html(titulo);
+
+  // Reiniciar el formulario y mostrar modal
+  $("#formAgenda")[0].reset();
+  $("#modalFormAgenda").modal("show");
+}
+
+
+function anularReservacion(ResId, HorId) {
   swal({
-      title: "Cancelar Reservación",
-      text: "¿Realmente quiere Cancelar Reservación?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Si, Eliminar!",
-      cancelButtonText: "No, cancelar!",
-      closeOnConfirm: false,
-      closeOnCancel: true
-  }, function(isConfirm) {
-   
-      if (isConfirm) {
-          var request = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
-          var ajaxUrl = base_url+'/Reservacion/anularReservacion';
-          var strData = "ids="+ResId;
-          request.open("POST",ajaxUrl,true);
-          request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-          request.send(strData);
-          request.onreadystatechange = function(){
-              if(request.readyState == 4 && request.status == 200){
-                  var objData = JSON.parse(request.responseText);
-                  if(objData.status){
-                      var Grid = JSON.parse(sessionStorage.dts_Reservacion);
-                      var array = findAndRemove(Grid, 'res_id', ResId);
-                      sessionStorage.dts_Reservacion = JSON.stringify(array);
-                      cargarBeneficiarios(HorId);
-                      swal("Cancelar!", objData.msg , "success");
-                      //$('#modalFormAgenda').modal("hide");//Oculta el Modal
-                      location.reload();
-                  }else{
-                      swal("Atención!", objData.msg , "error");
-                  }
-              }
+    title: "Cancelar Reservación",
+    text: "¿Realmente quiere Cancelar Reservación?",
+    type: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Si, Eliminar!",
+    cancelButtonText: "No, cancelar!",
+    closeOnConfirm: false,
+    closeOnCancel: true
+  }, function (isConfirm) {
+
+    if (isConfirm) {
+      var request = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+      var ajaxUrl = base_url + '/Reservacion/anularReservacion';
+      var strData = "ids=" + ResId;
+      request.open("POST", ajaxUrl, true);
+      request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      request.send(strData);
+      request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+          var objData = JSON.parse(request.responseText);
+          if (objData.status) {
+            var Grid = JSON.parse(sessionStorage.dts_Reservacion);
+            var array = findAndRemove(Grid, 'res_id', ResId);
+            sessionStorage.dts_Reservacion = JSON.stringify(array);
+            cargarBeneficiarios(HorId);
+            swal("Cancelar!", objData.msg, "success");
+            //$('#modalFormAgenda').modal("hide");//Oculta el Modal
+            location.reload();
+          } else {
+            swal("Atención!", objData.msg, "error");
           }
+        }
       }
+    }
 
   });
 
@@ -577,11 +648,11 @@ function anularReservacion(ResId,HorId){
 
 
 
-function reservarUsuario(accion) {
-  let idsModal=$("#txth_idsModal").val();
-  let pla_id= $("#txth_ids").val();
-  let ben_id= $("#txth_idBenef").val();
-  let ins_id= $("#txth_idsInstru").val();
+/*function reservarUsuario(accion) {
+  let idsModal = $("#txth_idsModal").val();
+  let pla_id = $("#txth_ids").val();
+  let ben_id = $("#txth_idBenef").val();
+  let ins_id = $("#txth_idsInstru").val();
   let act_id = $("#cmb_actividad").val();
   let niv_id = $("#cmb_nivel").val();
   let uni_id = $("#cmb_NumeroNivel").val();
@@ -589,7 +660,7 @@ function reservarUsuario(accion) {
   let hora = $("#txth_hora").val();
   let diaLetra = $("#txth_diaLetra").val();
 
-  if (niv_id!=0) {
+  if (niv_id != 0) {
     let objEnt = new Object();
     objEnt.idsModal = idsModal;
     objEnt.pla_id = pla_id;
@@ -600,38 +671,105 @@ function reservarUsuario(accion) {
     objEnt.ins_id = ins_id;
     objEnt.hora = hora;
     objEnt.sal_id = sal_id;
-    objEnt.diaLetra=diaLetra;
-    objEnt.fechaReserv=fechaDia;//retonarFecha(fechaDia)
+    objEnt.diaLetra = diaLetra;
+    objEnt.fechaReserv = fechaDia;//retonarFecha(fechaDia)
     objEnt.fechaInicio = fechaIni;
     objEnt.fechaFin = fechaFin;
     objEnt.cat_id = CentroIds;
-      let link = base_url + "/Reservacion/reservarBeneficiario";
-      $.ajax({
-        type: "POST",
-        url: link,
-        data: {
-          reservar: objEnt,
-          accion: accion,
-        },
-        success: function (data) {
-          if (data.status) {
-            limpiarTextReservacion();
-            swal("Planificación", data.msg, "success");
-            $('#modalFormAgenda').modal("hide");//Oculta el Modal
-            location.reload();
-          } else {
-            swal("Error", data.msg, "error");
-          }
-             
-        },
-        dataType: "json",
-      });
+    let link = base_url + "/Reservacion/reservarBeneficiario";
+    $.ajax({
+      type: "POST",
+      url: link,
+      data: {
+        reservar: objEnt,
+        accion: accion,
+      },
+      success: function (data) {
+        if (data.status) {
+          
+          limpiarBenef();  
+          limpiarTextReservacion();
+
+          swal("Planificación", data.msg, "success");
+          $('#modalFormAgenda').modal("hide");//Oculta el Modal
+          location.reload();
+        } else {
+          swal("Error", data.msg, "error");
+        }
+
+      },
+      dataType: "json",
+    });
   } else {
     swal("Atención!", "Seleccione un Nivel", "error");
   }
+}*/
+
+function reservarUsuario(accion) {
+  const idsModal = $("#txth_idsModal").val();
+  const pla_id = $("#txth_ids").val();
+  const ben_id = $("#txth_idBenef").val();
+  const ins_id = $("#txth_idsInstru").val();
+  const act_id = $("#cmb_actividad").val();
+  const niv_id = $("#cmb_nivel").val();
+  const uni_id = $("#cmb_NumeroNivel").val();
+  const sal_id = $("#txth_salon").val();
+  const hora = $("#txth_hora").val();
+  const diaLetra = $("#txth_diaLetra").val();
+
+  if (niv_id == 0) {
+    swal("Atención!", "Seleccione un Nivel", "error");
+    return;
+  }
+
+  const datosReserva = {
+    idsModal: idsModal,
+    pla_id: pla_id,
+    ben_id: ben_id,
+    act_id: act_id,
+    niv_id: niv_id,
+    uni_id: uni_id,
+    ins_id: ins_id,
+    sal_id: sal_id,
+    hora: hora,
+    diaLetra: diaLetra,
+    fechaReserv: fechaDia,     // Asegúrate de que esta variable global esté definida
+    fechaInicio: fechaIni,     // idem
+    fechaFin: fechaFin,        // idem
+    cat_id: CentroIds          // idem
+  };
+
+  const url = `${base_url}/Reservacion/reservarBeneficiario`;
+
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: {
+      reservar: datosReserva,
+      accion: accion
+    },
+    dataType: "json",
+    success: function (response) {
+      if (response.status) {
+        limpiarBenef();
+        limpiarTextReservacion();
+
+        swal("Planificación", response.msg, "success");
+        $('#modalFormAgenda').modal("hide");
+        location.reload(); // Recargar para reflejar cambios
+      } else {
+        swal("Error", response.msg, "error");
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error("Error AJAX:", status, error);
+      swal("Error", "Ocurrió un problema al guardar la reservación.", "error");
+    }
+  });
 }
 
-function limpiarTextReservacion(){
+
+function limpiarTextReservacion() {
   //$("#txth_ids").val("");
   $("#txth_idBenef").val("");
   $("#txth_idsInstru").val("");
@@ -651,11 +789,11 @@ function openModalPagos(contId) {
   let url = base_url + "/Cuota/consultarPagos";
   var metodo = 'POST';
   var datos = { IdsCont: contId, parametro2: 'valor2' };
-  peticionAjax(url, metodo, datos, function(data) {
+  peticionAjax(url, metodo, datos, function (data) {
     // Manejar el éxito de la solicitud aquí
     recargarGridPagos(data.data.movimiento);
 
-  }, function(jqXHR, textStatus, errorThrown) {
+  }, function (jqXHR, textStatus, errorThrown) {
     // Manejar el error de la solicitud aquí
     console.error('Error en la solicitud. Estado:', textStatus, 'Error:', errorThrown);
   });
@@ -665,7 +803,7 @@ function openModalPagos(contId) {
 function recargarGridPagos(arr_Grid) {
   var tGrid = 'dts_Control';
   $('#' + tGrid + ' tbody').html("");
-  if (arr_Grid.length > 0) {    
+  if (arr_Grid.length > 0) {
     for (var i = 0; i < arr_Grid.length; i++) {
       $('#' + tGrid).append(retornaFilaData(i, arr_Grid));
     }
@@ -675,7 +813,7 @@ function recargarGridPagos(arr_Grid) {
 
 function retornaFilaData(c, Grid) {
   var strFila = "";
-  let nFechaPago=(Grid[c]['FECHA_PAGO']=="" || Grid[c]['FECHA_PAGO']===null )?"": Grid[c]['FECHA_PAGO'];
+  let nFechaPago = (Grid[c]['FECHA_PAGO'] == "" || Grid[c]['FECHA_PAGO'] === null) ? "" : Grid[c]['FECHA_PAGO'];
   strFila += '<td>' + Grid[c]['NUMERO'] + '</td>';
   strFila += '<td>' + Grid[c]['FECHA_VENCE'] + '</td>';
   strFila += '<td>' + nFechaPago + '</td>';
@@ -685,16 +823,3 @@ function retornaFilaData(c, Grid) {
   strFila = '<tr class="odd gradeX">' + strFila + '</tr>';
   return strFila;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

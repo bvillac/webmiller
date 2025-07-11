@@ -55,18 +55,22 @@ require_once "Views/Reservacion/Modals/modalPagos.php";
 
       <div class="tile row">
         <div class="form-group col-md-12">
-          <h3>Centro: <span class="badge badge-secondary"><?= $data['Centro'] ?></span> Fecha Desde: <span class="badge badge-secondary"><?= $data['pla_fecha_incio'] ?></span> Fecha Hasta: <span class="badge badge-secondary"><?= $data['pla_fecha_fin'] ?></span></h3>
+          <h3>Centro: <span class="badge badge-secondary"><?= $data['Centro'] ?></span> Fecha Desde: <span
+              class="badge badge-secondary"><?= $data['pla_fecha_incio'] ?></span> Fecha Hasta: <span
+              class="badge badge-secondary"><?= $data['pla_fecha_fin'] ?></span></h3>
         </div>
 
         <div class="col-sm">
           <div class="row">
             <div class="form-group col-md-6">
               <label for="txt_NumeroContrato">Número Contrato<span class="required">*</span></label>
-              <input class="form-control" id="txt_NumeroContrato" name="txt_NumeroContrato" type="text" required="" placeholder="Buscar por Contrato">
+              <input class="form-control" id="txt_NumeroContrato" name="txt_NumeroContrato" type="text" required=""
+                placeholder="Buscar por Contrato">
             </div>
             <div class="form-group col-md-6">
               <label for="txt_CodigoBeneficiario">DNI Beneficiario<span class="required">*</span></label>
-              <input class="form-control" id="txt_CodigoBeneficiario" name="txt_CodigoBeneficiario" type="text" required="" placeholder="Buscar por Nombre o DNI">
+              <input class="form-control" id="txt_CodigoBeneficiario" name="txt_CodigoBeneficiario" type="text"
+                required="" placeholder="Buscar por Nombre o DNI">
             </div>
           </div>
           <div class="row">
@@ -74,6 +78,12 @@ require_once "Views/Reservacion/Modals/modalPagos.php";
               <label for="txt_NombreBeneficirio">Nombre <span class="required">*</span></label>
               <input class="form-control" id="txt_NombreBeneficirio" name="txt_NombreBeneficirio" type="text" disabled>
             </div>
+            <div class="form-group col-md-3 d-flex align-items-end">
+              <button type="button" class="btn btn-secondary w-100" onclick="limpiarBenef()">
+                Limpiar
+              </button>
+            </div>
+
           </div>
 
 

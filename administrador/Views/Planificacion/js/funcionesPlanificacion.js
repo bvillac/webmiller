@@ -491,7 +491,7 @@ function buscarSalonColor(ids) {
   return Grid.find(salon => salon["ids"] == ids) || 0;
 }
 
-function fnt_eventoPlanificado(comp) {
+/*function fnt_eventoPlanificado(comp) {
   let nEstado = false;
   let textobutton = comp.innerHTML;
   let idSalon = document.querySelector("#cmb_Salon").value;
@@ -544,7 +544,61 @@ function fnt_eventoPlanificado(comp) {
     }
     $("#" + comp.id).attr("id", nuevoId); //Se Cambia el Id y se Agrega el Salon asignado
   }
+}*/
+
+
+function fnt_eventoPlanificado(comp) {
+  const btn = $(comp);
+  const currentText = btn.html().trim();
+  const salonId = $("#cmb_Salon").val();
+  const originalId = comp.id;
+  let actualizar = false;
+
+  if (salonId != 0) {
+    if (currentText === "AGREGAR") {
+      actualizar = true;
+    } else {
+      const confirmarCambio = confirm("¿Está seguro de cambiar el salón?");
+      if (confirmarCambio) {
+        actualizar = true;
+      }
+    }
+  } else {
+    const confirmarEliminar = confirm("¿Desea eliminar la reservación del salón?");
+    if (confirmarEliminar) {
+      // Reestablecer a botón vacío
+      btn.removeClass("asignado-true").addClass("btn-light")
+        .removeAttr("style")
+        .html("AGREGAR");
+
+      // Opcionalmente puedes quitar el ID anterior si tenía salón
+      // btn.attr("id", originalIdSinSalon);
+    }
+
+    return; // No continuar si se elimina
+  }
+
+  if (actualizar) {
+    const salon = buscarSalonColor(salonId);
+    const partesId = originalId.split("_");
+
+    // Construir nuevo ID
+    const nuevoId = partesId.length >= 3
+      ? `${partesId[0]}_${partesId[1]}_${partesId[2]}_${salon.ids}`
+      : `${originalId}_${salon.ids}`;
+
+    // Aplicar estilos y actualizar ID/texto
+    btn.removeClass("btn-light").addClass("asignado-true")
+      .css({
+        color: "white",
+        "background-color": salon.Color
+      })
+      .html(salon.Nombre)
+      .attr("id", nuevoId);
+  }
 }
+
+
 
 function openModalSalon(comp) {
   //document.querySelector('#txth_ids').value = "";//IDS oculto hiden
