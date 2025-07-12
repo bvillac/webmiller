@@ -62,8 +62,7 @@ class ReservacionModel extends MysqlAcademico
         $sql .= "                   on b.per_id=c.per_id)   " ;
         $sql .= "           on a.ben_id=b.ben_id   " ;
         $sql .= "   where a.cat_id={$catId} and a.pla_id={$plaId} and date(a.res_fecha_reservacion) = '{$fecha}' " ; 
-        $sql .= "       and a.res_estado_logico!=0  order by a.res_hora,a.ins_id " ;
-putMessageLogFile($sql);        
+        $sql .= "       and a.res_estado_logico!=0  order by a.res_hora,a.ins_id " ;     
         $request = $this->select_all($sql);
         return $request;
     }

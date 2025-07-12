@@ -168,7 +168,7 @@ function retornarDiaLetras(nLetIni) {
 
 
 //Obtener fecha con Letras
-function obtenerFechaConLetras(fechaDia) {
+/*function obtenerFechaConLetras(fechaDia) {
   const meses = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
@@ -180,6 +180,41 @@ function obtenerFechaConLetras(fechaDia) {
 
   // Forzar interpretación en zona local
   const fecha = new Date(fechaDia.replace(/-/g, '/'));
+  //const fecha = new Date(fechaDia);
+  const dia = fecha.getDate();
+  const nombreDia = diasSemana[fecha.getDay()];
+  const mes = meses[fecha.getMonth()];
+  const año = fecha.getFullYear();
+
+  return `${capitalizar(nombreDia)}, ${dia} de ${mes} de ${año}`;
+}*/
+
+function obtenerFechaConLetras(fechaDia) {
+  const meses = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+  ];
+
+  const diasSemana = [
+    "domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"
+  ];
+
+  // Validar si es una fecha válida
+  let fecha;
+
+  if (Object.prototype.toString.call(fechaDia) === "[object Date]") {
+    // Ya es un objeto Date
+    fecha = fechaDia;
+  } else {
+    // Es un string o algo similar
+    const str = String(fechaDia).replace(/-/g, '/');
+    fecha = new Date(str);
+  }
+
+  if (isNaN(fecha.getTime())) {
+    return "Fecha inválida";
+  }
+
   const dia = fecha.getDate();
   const nombreDia = diasSemana[fecha.getDay()];
   const mes = meses[fecha.getMonth()];
@@ -187,6 +222,14 @@ function obtenerFechaConLetras(fechaDia) {
 
   return `${capitalizar(nombreDia)}, ${dia} de ${mes} de ${año}`;
 }
+
+function capitalizar(texto) {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+
+
+
 
 
 function capitalizar(texto) {
