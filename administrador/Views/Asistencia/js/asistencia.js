@@ -70,67 +70,56 @@ function fntInstructor(ids) {
       swal("Información", "Seleccionar un Instructor", "info");
     }
   }
-
-
-  function buscarReservaciones(){
-    let link = base_url + '/Asistencia/asistenciaFechaHora';
-    let Centro=($('#cmb_CentroAtencion').val()!=0)?$('#cmb_CentroAtencion').val():0;
-    //let PlaID=($('#cmb_CentroAtencion').val()!=0)?$('#cmb_CentroAtencion').val():0;
-    let InsId=($('#cmb_instructor').val()!=0)?$('#cmb_instructor').val():0;
-    let hora=($('#cmb_hora').val()!=0)?$('#cmb_hora').val():0;
-   
+  function buscarReservaciones() {
+    const link = `${base_url}/Asistencia/asistenciaFechaHora`;
+    const Centro = $('#cmb_CentroAtencion').val() || 0;
+    const InsId = $('#cmb_instructor').val() || 0;
+    const hora = $('#cmb_hora').val() || 0;
+    const fechaDia = $("#dtp_fecha").val();
+    const EstAsist = $('#cmb_estadoAsist').val() || 0;
 
     $.ajax({
-        type: 'POST',
-        url: link,
-        data:{
-            "catId": Centro,
-            //"plaId": 1,
-            "insId": InsId,
-            "hora": hora,            
-            "fechaDia": $("#dtp_fecha").val(),
-        } ,
-        success: function(data){
-            let Response=data;
-            $("#list_tables").empty();
-            if(Response.status){ 
-              let table=Response.data;
-              let c=0;
-              let h=0;
-              let strtable = ""; 
-              let ban=0;
-              let strFila = "";
-              while (c < table.length) {
-                strtable = '<h3 class="tile-title">TUTOR: ' + table[c]['InsNombre'] + '</h3>';
-                $('#list_tables').append(strtable);
-               
-                let auxHora = "";
-                let thoras = table[c].Reservado;
-                h=0;
-                while (h < thoras.length) {
-                  if (auxHora != thoras[h].ResHora) { 
-                    if (h != 0) {
-                      fntNewTable(auxHora,thoras[h],strFila)
-                      strFila = "";
-                    }                         
-                    auxHora = thoras[h].ResHora;
-                  }
-                  //console.log(thoras[h].ResId+" "+thoras[h].ResHora+" "+thoras[h].BenNombre);
-                  strFila += fntRowHora(thoras[h]);
-                  h++;
-                }
-                fntNewTable(auxHora,thoras[h-1],strFila)
+      type: 'POST',
+      url: link,
+      data: {
+        catId: Centro,
+        insId: InsId,
+        hora: hora,
+        fechaDia: fechaDia,
+        EstadoAsist: EstAsist,
+      },
+      dataType: "json",
+      success: function (data) {
+        $("#list_tables").empty();
+        if (data.status && Array.isArray(data.data) && data.data.length) {
+          data.data.forEach(function (tutor) {
+            let nombreInstructor = tutor.InsNombre && tutor.InsNombre.trim() !== '' ? tutor.InsNombre : 'INSTRUCTOR NO SELECCIONADO';
+            $('#list_tables').append(`<h3 class="tile-title">TUTOR: ${nombreInstructor}</h3>`);
+            let strFila = "";
+            let prevHora = null;
+            let lastThora = null;
+            tutor.Reservado.forEach(function (thora, idx) {
+              if (prevHora !== thora.ResHora && strFila) {
+                fntNewTable(prevHora, lastThora, strFila);
                 strFila = "";
-                c++;
               }
-            }else{
-              swal("Atención!", Response.msg, "error");
+              prevHora = thora.ResHora;
+              strFila += fntRowHora(thora);
+              lastThora = thora;
+            });
+            if (strFila) {
+              fntNewTable(prevHora, lastThora, strFila);
             }
-
-        },
-        dataType: "json"
+          });
+        } else {
+          swal("Atención!", data.msg || "No se encontraron datos.", "info");
+        }
+      },
+      error: function () {
+        swal("Error", "Ocurrió un error al buscar las reservaciones.", "error");
+      }
     });
-}
+  }
 
 function fntNewTable(auxHora,thoras,strFila) {
   let nHora='HORA: '+auxHora+':00 --> ';

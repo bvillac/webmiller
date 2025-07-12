@@ -145,29 +145,6 @@ class Reservacion extends Controllers
         die();
     }
 
-    /*private function contarReservados($data)
-    {
-        $numRes = [];
-        $c = 0;
-        if (sizeof($data) > 0) {
-            $aux = $data[0]['Ids'];
-            $rowData[$c]['Ids'] = $data[0]['Ids'];
-            $rowData[$c]['count'] = 0;
-            for ($i = 0; $i < sizeof($data); $i++) {
-                if ($data[$i]['Ids'] <> $aux) {
-                    $c++;
-                    $rowData[$c]['Ids'] = $data[$i]['Ids'];
-                    $rowData[$c]['count']++;
-                } else {
-                    $rowData[$c]['count']++;
-                }
-                $aux = $data[$i]['Ids'];
-            }
-            $numRes = $rowData;
-        }
-
-        return $numRes;
-    }*/
 
     private function contarReservados($data)
     {

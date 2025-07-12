@@ -47,9 +47,17 @@
                   echo '<option value="0">SELECCIONAR</option>';
                   foreach ($data['horarios'] as $opcion) {
                     echo '<option value="' . $opcion . '" >' . $opcion . ':00</option>';
-                  }
-                  
+                  }                  
                   ?>
+                </select>
+              </div>
+              <div class="form-group col-md-12">
+                <label for="cmb_estadoAsist">Estado Asistencia</label>
+                <select class="form-control" id="cmb_estadoAsist" name="cmb_estadoAsist">
+                  <option value="0">NINGUNO</option>
+                  <option value="A">SI</option>
+                  <option value="R">NO</option>
+                  <!-- <option value="C">CANCELADO</option> -->
                 </select>
               </div>
               <div class="form-group col-md-12">

@@ -137,10 +137,11 @@ class ReservacionModel extends MysqlAcademico
 
     public function anularReservacion(int $Ids)
     {
+        //Cambia a estado logico 0 y la asistencia a C
         $usuario = retornaUser();
-        $sql = "UPDATE " . $this->db_name . ".reservacion SET res_estado_logico = ?,res_usuario_modificacion='{$usuario}',
+        $sql = "UPDATE " . $this->db_name . ".reservacion SET res_asistencia=?,res_estado_logico = ?,res_usuario_modificacion='{$usuario}',
                         res_fecha_modificacion = CURRENT_TIMESTAMP() WHERE res_id = {$Ids} ";
-        $arrData = array(0);
+        $arrData = array('C',0);
         $request = $this->update($sql, $arrData);
         return $request;
     }

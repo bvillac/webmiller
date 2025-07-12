@@ -15,7 +15,7 @@ class AsistenciaModel extends MysqlAcademico
 
 
 
-    public function consultarAsistenciaFechaHora($catId, $plaId, $insId, $fecha, $hora)
+    public function consultarAsistenciaFechaHora($catId, $plaId, $insId, $fecha, $hora,$estadoAsist)
     {
         $db = $this->db_name;
         $dbAdmin = $this->db_nameAdmin;
@@ -49,6 +49,10 @@ class AsistenciaModel extends MysqlAcademico
         }
         if ($hora !== "0") {
             $sql .= " AND a.res_hora = {$hora}";
+        }
+
+        if ($estadoAsist !== "0") {
+            $sql .= " AND a.res_asistencia = '{$estadoAsist}'";
         }
 
         $sql .= " ORDER BY a.ins_id, CONVERT(a.res_hora, SIGNED)";
@@ -106,75 +110,12 @@ class AsistenciaModel extends MysqlAcademico
 
 
 
-    /*public function marcarAsistencia(int $Ids)
-    {
-        $usuario = retornaUser();
-        $con = $this->getConexion();
-        $sql = "SELECT * FROM " . $this->db_name . ".reservacion where res_id='{$Ids}' AND res_estado_logico=1";
-        $request = $this->select($sql);
-        if (!empty($request)) {
-
-            try {
-                $con->beginTransaction();
-                //Insertar Control Academico
-                $arrData = array(
-                    $request['ben_id'],
-                    $request['act_id'],
-                    $request['ins_id'],
-                    $request['niv_id'],
-                    $request['res_id'],
-                    $request['res_unidad'],
-                    NULL,
-                    NULL,
-                    $request['res_hora'],
-                    NULL,
-                    retornaUser(),
-                    1
-                );
-                $SqlQuery = "INSERT INTO " . $this->db_name . ".control_academico 
-                    (`ben_id`,
-                    `act_id`,
-                    `ins_id`,
-                    `niv_id`,
-                    `res_id`,
-                    `cac_unidad`,
-                    `val_id`,
-                    `cac_valoracion`,
-                    `cac_hora`,
-                    `cac_observacion`,
-                    `cac_usuario_creacion`,                   
-                    `cac_estado_logico`) VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ";
-                $Ids = $this->insertConTrasn($con, $SqlQuery, $arrData);
-                //Acualizar Asistencia
-                $sql = "UPDATE " . $this->db_name . ".reservacion SET res_asistencia = ?,res_usuario_modificacion='{$usuario}',
-                            res_fecha_modificacion = CURRENT_TIMESTAMP() WHERE res_id = {$Ids} ";
-                $arrData = array("A");
-                $request = $this->updateConTrasn($con, $sql, $arrData);
-
-                putMessageLogFile("llego");
-
-                $con->commit();
-                $arroout["status"] = true;
-                $arroout["numero"] = 0;
-                return $arroout;
-            } catch (Exception $e) {
-                $con->rollBack();
-                echo "Fallo: " . $e->getMessage();
-                //throw $e;
-                $arroout["message"] = $e->getMessage();
-                $arroout["status"] = false;
-                return $arroout;
-            }
-        } else {
-            $arroout["status"] = false;
-            $arroout["message"] = "Error al ingresar la asistencía.";
-            return $arroout;
-        }
-    }*/
-
 
     public function marcarAsistencia(int $resId)
     {
+        //A=ASISTIO
+        //R=RESERVADO
+        
         $usuario = retornaUser();
         $con = $this->getConexion();
 

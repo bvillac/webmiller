@@ -46,8 +46,9 @@ class Asistencia extends Controllers
                     $plaId = 0;//isset($_POST['plaId']) ? $_POST['plaId'] : 0;
                     $insId = isset($_POST['insId']) ? $_POST['insId'] : 0;
                     $fechaDia = isset($_POST['fechaDia']) ? $_POST['fechaDia'] : '';
+                    $estadoAsist = isset($_POST['EstadoAsist']) ? $_POST['EstadoAsist'] : 0;
                     $hora = isset($_POST['hora']) ? $_POST['hora'] : 0;        
-                    $arrData = $this->model->consultarAsistenciaFechaHora($catId,$plaId,$insId,$fechaDia,$hora);
+                    $arrData = $this->model->consultarAsistenciaFechaHora($catId,$plaId,$insId,$fechaDia,$hora,$estadoAsist);
                     if (empty($arrData)) {
                         $arrResponse = array('status' => false, 'msg' => 'Datos no encontrados.');
                     } else {
