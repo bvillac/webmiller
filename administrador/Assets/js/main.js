@@ -239,7 +239,6 @@ function capitalizar(texto) {
 
 // Convierte string "YYYY-MM-DD" en objeto Date
 function obtenerFormatoFecha(fechaString) {
-    //console.log(fechaString);
     var partesFecha = fechaString.split("-");
     var fechaReal = new Date(partesFecha[0], partesFecha[1] - 1, partesFecha[2]);
     return fechaReal;
@@ -254,6 +253,9 @@ function retonarFecha(fecha) {
 }
 
 // Verifica si una fecha está dentro del rango, o fuera
+// y ajusta la fecha al inicio o fin del rango si es necesario
+// Retorna un objeto con estado y fecha ajustada
+// estado: "OK" (dentro del rango), "INI" (inicio del rango), "FIN" (fin del rango), "FUE" (fuera del rango)
 function estaEnRango(evento, fecha, fechaInicio, fechaFin) {
     const resultado = {};
   
@@ -308,7 +310,7 @@ function contarFechaDia(accionMove, fecha) {
 }
 
 //Busca si existe un codigo en la lista JSON
-function codigoExiste(value, property, lista) {
+/*function codigoExiste(value, property, lista) {
     if (lista) {
         var array = JSON.parse(lista);
         for (var i = 0; i < array.length; i++) {
@@ -318,7 +320,24 @@ function codigoExiste(value, property, lista) {
         }
     }
     return true;
+}*/
+
+// Busca si existe un código en la lista JSON
+// Retorna true si el código no existe, falso si ya existe
+// Si listaJson es null o undefined, retorna verdadero
+function codigoExiste(value, property, listaJson) {
+  if (!listaJson) return true;
+
+  try {
+    const lista = JSON.parse(listaJson);
+
+    return !lista.some(item => item[property] == value);
+  } catch (error) {
+    console.error("Error al parsear codigoExiste JSON:", error);
+    return true; // Asume que no existe si hay error en el JSON
+  }
 }
+
 
 // Retorna el índice del primer elemento que coincide con una propiedad y valor
 function retornarIndexArray(array, property, value) {

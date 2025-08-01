@@ -150,7 +150,7 @@ $(document).ready(function () {
     generarPlanificacion("Gen");
   });
   $("#btn_siguiente").click(function () {
-    generarPlanificacion("Next");
+    generarPlanificacion("Next");// Nueva Función para generar la planificación
   });
   $("#btn_anterior").click(function () {
     generarPlanificacion("Back");
@@ -342,9 +342,10 @@ function fntNameHoras(str) {
   return result;
 }
 
-/**************** GENERAR PLANIFICACION  ******************/
+/**************** GENERAR PLANIFICACION  NUEVA******************/
 function generarPlanificacion(accionMove) {
   const tabla = $("#dts_Planificiacion");
+  //extrae los datos del instructor planificado en su ingreso
   const grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
 
   if (!grid.length) return;
@@ -352,19 +353,21 @@ function generarPlanificacion(accionMove) {
   const fechaIni = $("#dtp_fecha_desde").val();
   const fechaFin = $("#dtp_fecha_hasta").val();
 
-  if (accionMove === "Gen") {
-    fechaDia = obtenerFormatoFecha(fechaIni);
+  if (accionMove === "Gen") {//Es la primera vez que se genera la planificación
+    fechaDia = obtenerFormatoFecha(fechaIni);//Convertir la fecha de string a objeto Date
   } else {
+    //Entra por next o back
     const estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
     if (estadoFecha.estado === "FUE") {
       swal("Atención!", "Fechas fuera de Rango", "error");
       return;
     }
-    fechaDia = estadoFecha.fecha;
+    fechaDia = estadoFecha.fecha;//ACtualiza la fechaDia con la nueva fecha
   }
 
 
-  // Generar encabezado
+
+  // Crear fila de encabezado con las horas y los nombres de los instructores
   const filaEncabezado = $("<tr></tr>").append("<th>Horas</th>");
   grid.forEach(instr => {
     const nombre = instr["Nombre"].substring(0, 15).toUpperCase();
@@ -375,50 +378,54 @@ function generarPlanificacion(accionMove) {
   tabla.find("thead").html(filaEncabezado);
   tabla.find("tbody").empty();
 
-  const nLetIni = obtenerCodigoDiaAbreviado($("#FechaDia").text());
+  const nLetIni = obtenerCodigoDia($("#FechaDia").text());//Obtiene el código del día actual iniciales
+  if (codigoExiste(nLetIni, "dia", sessionStorage.dts_PlaTemporal)) {
+    // Si ya existe planificación para el día, debería cargar los datos que estan en la sessionStorage
+    generarTablaDesdeTemporal(nLetIni, tabla);
+  } else {
+    // Si no existe planificación, se crea una nueva tabla con los datos del instructor
+    for (let hora = 8; hora < 22; hora++) {
+      const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
+      grid.forEach(instr => {
+        const td = generarCeldaHorario(nLetIni, hora, instr);
+        fila.append(td);
+      });
+      tabla.find("tbody").append(fila);
+    }
+
+  }
+
+
+}
+
+function generarTablaDesdeTemporal(nLetIni, tabla) {
+  const rawData = sessionStorage.getItem('dts_PlaTemporal');
+  if (!rawData) return;
+
+  const datos = JSON.parse(rawData);
 
   for (let hora = 8; hora < 22; hora++) {
     const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
-    grid.forEach(instr => {
-      const td = generarCeldaHorario(nLetIni, hora, instr);
-      fila.append(td);
-    });
+
+    // Filtrar todos los datos que coincidan con esta hora
+    const datosHora = datos.filter(item => parseInt(item.horaInicio) === hora);
+
+    // Si no hay datos para esta hora, agregamos una celda vacía
+    if (datosHora.length === 0) {
+      fila.append('<td colspan="5">-</td>'); // Ajusta colspan según lo que necesites mostrar
+    } else {
+      datosHora.forEach(item => {
+        const td = generarCeldaHorarioDesdeTemporal(nLetIni, item);
+        fila.append(td);
+      });
+    }
+
     tabla.find("tbody").append(fila);
   }
 }
 
 
-function obtenerCodigoDiaAbreviado(texto) {
-  let code = texto.toUpperCase().substring(0, 2);
-  return code === "SÁ" ? "SA" : code;
-}
 
-/*function generarCeldaHorario(nLetIni, hora, instr) {
-  const nDiaHora = nLetIni + hora;
-  //LU=DIA,HORA=HORA,IDS=ID_INSTRUCTOR,SALONES=SALONES
-  const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
-
-  if (existeHorario(instr["Horario"], nDiaHora)) {
-    const salon = buscarSalonColor(instr["Salones"].split(",")[0]);
-    const idPlan = `${idBase}_${salon["ids"]}`;
-    return `
-      <td>
-        <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
-          style="color:white; background-color:${salon["Color"]}"
-          onclick="fnt_eventoPlanificado(this)">
-          ${salon["Nombre"]}
-        </button>
-      </td>`;
-  } else {
-    return `
-      <td>
-        <button type="button" id="${idBase}" class="btn ms-auto btn-lg btn-light"
-          onclick="fnt_eventoPlanificado(this)">
-          AGREGAR
-        </button>
-      </td>`;
-  }
-}*/
 
 function obtenerHorarioCoincidente(nDiaHora) {
   const plaTemporal = sessionStorage.dts_PlaTemporal
@@ -491,60 +498,6 @@ function buscarSalonColor(ids) {
   return Grid.find(salon => salon["ids"] == ids) || 0;
 }
 
-/*function fnt_eventoPlanificado(comp) {
-  let nEstado = false;
-  let textobutton = comp.innerHTML;
-  let idSalon = document.querySelector("#cmb_Salon").value;
-  if (idSalon != 0) {
-    if (textobutton == "AGREGAR") {
-      nEstado = true;
-      //openModalSalon(comp);
-    } else {
-      var respuesta = confirm("Esta seguro de Cambiar.");
-      if (respuesta) {
-        nEstado = true;
-      }
-    }
-  } else {
-    //ELIMINAR SALON RESERVADO
-    var respuesta = confirm("Seleccionar un Salón / Eliminar la reservacion.");
-    if (respuesta) {
-      //'" class="btn ms-auto btn-lg btn-light" onclick="fnt_eventoPlanificado(this)">AGREGAR</button></td>';
-      $("#" + comp.id).removeClass("asignado-true").addClass("btn-light");
-      $("#" + comp.id).removeAttr("style");
-      $("#" + comp.id).html("AGREGAR");
-    }
-    nEstado = false;
-    //swal("Información", "Seleccionar un Salón / Eliminar la reservacion.", "info");
-
-
-  }
-
-  if (nEstado) {
-    //Camia el Salon cuando es True
-    let objSalon = buscarSalonColor(idSalon);
-    let nButton = $("#" + comp.id);
-    nButton.removeClass("btn-light").addClass("asignado-true");
-    nButton.css("color", "white");
-    nButton.css("background-color", objSalon["Color"]);
-    $("#" + comp.id).html(objSalon["Nombre"]);
-    let arrayIds = comp.id.split("_");
-    let nuevoId = comp.id;
-    if (arrayIds.length > 3) {
-      nuevoId =
-        arrayIds[0] +
-        "_" +
-        arrayIds[1] +
-        "_" +
-        arrayIds[2] +
-        "_" +
-        objSalon["ids"];
-    } else {
-      nuevoId += "_" + objSalon["ids"];
-    }
-    $("#" + comp.id).attr("id", nuevoId); //Se Cambia el Id y se Agrega el Salon asignado
-  }
-}*/
 
 
 function fnt_eventoPlanificado(comp) {
@@ -628,30 +581,34 @@ function objDataRow(nLetIni) {
 
 
 function guardarTemp() {
-  const nLetIni = obtenerCodigoDia();
+  const nLetIni = obtenerCodigoDia();//Obtiene el código del día actual iniciales
 
   const arrayList = sessionStorage.dts_PlaTemporal
     ? JSON.parse(sessionStorage.dts_PlaTemporal)
     : [];
 
+  //Crear nueva fila con los datos del día y almacenarla por dia  horarios y fecha
   const nuevaFila = objDataRow(nLetIni);
 
   if (arrayList.length === 0) {
+    // Si no hay datos, simplemente guardamos la nueva fila en el Json
     guardarFila(arrayList, nuevaFila);
     return;
   }
 
   if (codigoExiste(nLetIni, "dia", sessionStorage.dts_PlaTemporal)) {
-    arrayList.push(nuevaFila);
-    actualizarStorage(arrayList);
-    mostrarMensaje("Información!", "Planificación Temporal Guardada.", "success");
+    guardarFila(arrayList, nuevaFila);
+    //arrayList.push(nuevaFila);
+    //actualizarStorage(arrayList);
+    //mostrarMensaje("Información!", "Planificación Temporal Guardada.", "success");
   } else {
     confirmarModificacion(() => {
-      eliminarItemsDia(nLetIni);
+      eliminarItemsDia(nLetIni);//elimina los items del dia seleccionado y filtra los demás
       const actualizada = JSON.parse(sessionStorage.dts_PlaTemporal);
-      actualizada.push(nuevaFila);
-      actualizarStorage(actualizada);
-      mostrarMensaje("Información!", "Planificación Temporal Guardada.", "success");
+      guardarFila(actualizada, nuevaFila);
+      //actualizada.push(nuevaFila);
+      //actualizarStorage(actualizada);
+      //mostrarMensaje("Información!", "Planificación Temporal Guardada.", "success");
     });
   }
 }
@@ -707,7 +664,7 @@ function confirmarModificacion(callback) {
       closeOnConfirm: false,
       closeOnCancel: true
     },
-    function(isConfirm) {
+    function (isConfirm) {
       if (isConfirm) callback();
     }
   );
@@ -719,13 +676,21 @@ function confirmarModificacion(callback) {
  * @param {string} nDia - Código del día a eliminar (ej: "LU").
  */
 function eliminarItemsDia(nDia) {
-  const data = sessionStorage.getItem("dts_PlaTemporal");
-  if (!data) return;
+  const rawData = sessionStorage.getItem('dts_PlaTemporal');
+  if (!rawData) return;
+  try {
+    const lista = JSON.parse(rawData);
 
-  const lista = JSON.parse(data);
-  const nuevaLista = lista.filter(item => item.dia !== nDia);
-  actualizarStorage(nuevaLista);
+    // Filtrar los elementos que no coincidan con el día a eliminar 
+    const nuevaLista = lista.filter(item => item.dia !== nDia);
+
+    // Actualizar el almacenamiento
+    actualizarStorage(nuevaLista);
+  } catch (error) {
+    console.error('Error al eliminar elementos del día eliminarItemsDia:', error);
+  }
 }
+
 
 
 
@@ -812,127 +777,6 @@ function fntupdateSalones(resultSalon) {
 }
 
 
-/*function generarPlanificiacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
-alert("Generar Planificación Editar");
-  var tabla = document.getElementById("dts_Planificiacion");
-  var nDia = "";
-  let salonArray = 0;
-  let idsSalon = 0;
-  if (sessionStorage.dts_PlaInstructor) {
-    var Grid = JSON.parse(sessionStorage.dts_PlaInstructor);
-    if (Grid.length > 0) {
-
-      if (accionMove == "Edit") {
-        fechaDia = obtenerFormatoFecha(fechaIni);
-      } else {
-        let estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
-        //console.log(estadoFecha);
-        if (estadoFecha.estado == "FUE") {
-          fechaDia = estadoFecha.fecha;
-          swal("Atención!", "Fechas fuera de Rango", "error");
-          return;
-        }
-
-      }
-
-
-
-      var filaEncabezado = $("<tr></tr>");
-      $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
-      //ENCABEZADO DE PLANIFICACION INSTRUCTOR
-      filaEncabezado.append($("<th>Horas</th>"));
-      for (var i = 0; i < Grid.length; i++) {
-        filaEncabezado.append(
-          $("<th>" + Grid[i]["Nombre"].substring(0, 15).toUpperCase() + "</th>")
-        );
-      }
-      $("#dts_Planificiacion thead").html("");
-      $("#dts_Planificiacion thead").append(filaEncabezado);
-      //FIN PLANIFICION
-      let nLetIni = $("#FechaDia").html().toUpperCase();
-      nLetIni = nLetIni.substring(0, 2);
-      nLetIni = nLetIni == "SÁ" ? "SA" : nLetIni; //Se cambia por la Tilde
-      numeroHora = 8;
-
-      switch (nLetIni) {
-        case "LU":
-          nDia = nLunes.split(",");
-          break;
-        case "MA":
-          nDia = nMartes.split(",");
-          break;
-        case "MI":
-          nDia = nMiercoles.split(",");
-          break;
-        case "JU":
-          nDia = nJueves.split(",");
-          break;
-        case "VI":
-          nDia = nViernes.split(",");
-          break;
-        case "SA":
-          nDia = nSabado.split(",");
-          break;
-        default:
-          nDia = new Array();
-      }
-      var tabla = $("#dts_Planificiacion tbody");
-      $("#dts_Planificiacion tbody").html("");
-      for (var i = 0; i < 14; i++) {
-        //GENERA LAS FILAS
-        var fila = "<tr><td>" + numeroHora + ":00</td>";
-        for (var col = 0; col < Grid.length; col++) {
-          //nLetIni=>inicialDia;numeroHora=>horaDia;Grid[col]['ids']=>Id Instructor
-          let idPlan = nLetIni + "_" + numeroHora + "_" + Grid[col]["ids"];
-          let nResArray = existeHorarioEditar(nDia, idPlan);
-          let nExiste = false;
-          if (nResArray != "0") {
-            salonArray = nResArray[0].split("_");
-            idsSalon = salonArray[3];
-            nExiste = true;
-          }
-
-          if (nExiste) {
-            let objSalon = buscarSalonColor(idsSalon);
-            idPlan += "_" + objSalon["ids"]; //Agrega el Id del Salon
-            fila += "<td>";
-            fila +=
-              '<button type="button" id="' +
-              idPlan +
-              '" class="btn ms-auto btn-lg asignado-true" style="color:white;background-color:' +
-              objSalon["Color"] +
-              '" onclick="fnt_eventoPlanificado(this)">' +
-              objSalon["Nombre"] +
-              "</button>";
-            fila += "</td>";
-          } else {
-            fila +=
-              '<td><button type="button" id="' +
-              idPlan +
-              '" class="btn ms-auto btn-lg btn-light" onclick="fnt_eventoPlanificado(this)">AGREGAR</button></td>';
-          }
-        }
-        fila += "</tr>";
-        tabla.append(fila);
-        numeroHora++;
-      }
-    }
-  }
-}
-
-function existeHorarioEditar(nHorArray, nDiaHora) {
-  const resultados = nHorArray.filter(function (element) {
-    return element.includes(nDiaHora);
-  });
-
-  if (resultados.length > 0) {
-    //console.log(`Se encontraron elementos en el array que contienen "${nDiaHora}":`);
-    //console.log(resultados);
-    return resultados;
-  }
-  //console.log(`No se encontraron elementos en el array que contengan "${nDiaHora}".`);
-  return "0";
-}*/
 
 
 //####################################################
@@ -947,7 +791,7 @@ function generarPlanificacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJuev
   } else {
     const estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
     if (estadoFecha.estado === "FUE") {
-      
+
       swal("Atención!", "Fechas fuera de Rango", "error");
       return;
     }
@@ -960,7 +804,7 @@ function generarPlanificacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJuev
   $("#dts_Planificiacion thead").html(encabezado);
   $("#dts_Planificiacion tbody").empty();
 
-  const nLetIni = obtenerCodigoDiaAbreviado($("#FechaDia").text());
+  const nLetIni = obtenerCodigoDia($("#FechaDia").text());
   const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
 
   let hora = 8;
@@ -979,7 +823,7 @@ function crearEncabezado(Grid) {
   return fila;
 }
 
-function obtenerCodigoDiaAbreviado(texto) {
+function obtenerCodigoDia(texto) {
   let code = texto.toUpperCase().substring(0, 2);
   return code === "SÁ" ? "SA" : code;
 }
@@ -1215,105 +1059,6 @@ function fntAutorizarPlanificacion(ids) {
 }
 
 
-//AUTORIZADOS
-
-/*function generarPlanificiacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
-  var tabla = document.getElementById("dts_PlanificiacionAut");
-  var nDia = "";
-  let salonArray = 0;
-  let idsSalon = 0;
-  if (sessionStorage.dts_PlaInstructor) {
-    var Grid = JSON.parse(sessionStorage.dts_PlaInstructor);
-    if (Grid.length > 0) {
-      
-
-      if (accionMove == "Edit") {
-        fechaDia = obtenerFormatoFecha(fechaIni);
-      } else {
-        let estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
-        //console.log(estadoFecha);
-        if (estadoFecha.estado == "FUE") {
-          fechaDia = estadoFecha.fecha;
-          swal("Atención!", "Fechas fuera de Rango", "error");
-          return;
-        }
-
-      }
-
-      var filaEncabezado = $("<tr></tr>");
-      $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
-      //ENCABEZADO DE PLANIFICACION INSTRUCTOR
-      filaEncabezado.append($("<th>Horas</th>"));
-      for (var i = 0; i < Grid.length; i++) {
-        filaEncabezado.append(
-          $("<th>" + Grid[i]["Nombre"].substring(0, 15).toUpperCase() + "</th>")
-        );
-      }
-      $("#dts_PlanificiacionAut thead").html("");
-      $("#dts_PlanificiacionAut thead").append(filaEncabezado);
-      //FIN PLANIFICION
-      let nLetIni = $("#FechaDia").html().toUpperCase();
-      nLetIni = nLetIni.substring(0, 2);
-      nLetIni = nLetIni == "SÁ" ? "SA" : nLetIni; //Se cambia por la Tilde
-      numeroHora = 8;
-
-      switch (nLetIni) {
-        case "LU":
-          nDia = nLunes.split(",");
-          break;
-        case "MA":
-          nDia = nMartes.split(",");
-          break;
-        case "MI":
-          nDia = nMiercoles.split(",");
-          break;
-        case "JU":
-          nDia = nJueves.split(",");
-          break;
-        case "VI":
-          nDia = nViernes.split(",");
-          break;
-        case "SA":
-          nDia = nSabado.split(",");
-          break;
-        default:
-          nDia = new Array();
-      }
-      var tabla = $("#dts_PlanificiacionAut tbody");
-      $("#dts_PlanificiacionAut tbody").html("");
-      for (var i = 0; i < 14; i++) {
-        //GENERA LAS FILAS
-        var fila = "<tr><td>" + numeroHora + ":00</td>";
-        for (var col = 0; col < Grid.length; col++) {
-          //nLetIni=>inicialDia;numeroHora=>horaDia;Grid[col]['ids']=>Id Instructor
-          let idPlan = nLetIni + "_" + numeroHora + "_" + Grid[col]["ids"];
-          let nResArray = existeHorarioEditar(nDia, idPlan);
-          let nExiste = false;
-          if (nResArray != "0") {
-            salonArray = nResArray[0].split("_");
-            idsSalon = salonArray[3];
-            nExiste = true;
-          }
-
-          if (nExiste) {
-            let objSalon = buscarSalonColor(idsSalon);
-            idPlan += "_" + objSalon["ids"]; //Agrega el Id del Salon
-            fila += "<td>";
-            fila += '<button type="button" id="' + idPlan + '" class="btn ms-auto btn-lg asignado-true" style="color:white;background-color:' + objSalon["Color"] + '" >' + objSalon["Nombre"] + "</button>";
-            fila += "</td>";
-          } else {
-            //fila +='<td><button type="button" id="' +idPlan + '" class="btn ms-auto btn-lg btn-light" onclick="fnt_eventoPlanificado(this)">AGREGAR</button></td>';
-            fila += '<td></td>';
-          }
-        }
-        fila += "</tr>";
-        tabla.append(fila);
-        numeroHora++;
-      }
-    }
-  }
-}*/
-
 
 function generarPlanificacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
 
@@ -1337,7 +1082,7 @@ function generarPlanificacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueve
   $("#dts_PlanificiacionAut thead").html(encabezado);
   $("#dts_PlanificiacionAut tbody").empty();
 
-  const nLetIni = obtenerCodigoDiaAbreviado($("#FechaDia").text());
+  const nLetIni = obtenerCodigoDia($("#FechaDia").text());
   const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
 
   let hora = 8;
