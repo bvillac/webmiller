@@ -40,14 +40,12 @@
             <div class="form-group col-md-6">
               <label for="dtp_fecha_desde">Fecha Desde</label>
               <input type="date" class="form-control " id="dtp_fecha_desde" name="dtp_fecha_desde" 
-                placeholder="1988-01-01" pattern="^\d{4}\/\d{2}\/\d{2}$" required=""
-                value="<?= $data['tpla_fecha_incio'] ?>">  
+                placeholder="1988-01-01" pattern="^\d{4}\/\d{2}\/\d{2}$" required="">  
             </div>
             <div class="form-group col-md-6">
             <label for="dtp_fecha_hasta">Fecha Hasta</label>
             <input type="date" class="form-control " id="dtp_fecha_hasta" name="dtp_fecha_hasta" 
-              placeholder="1988-01-01" pattern="^\d{4}\/\d{2}\/\d{2}$" required=""
-              value="<?= $data['tpla_fecha_fin'] ?>">  
+              placeholder="1988-01-01" pattern="^\d{4}\/\d{2}\/\d{2}$" required="">  
             </div>
           </div>
        

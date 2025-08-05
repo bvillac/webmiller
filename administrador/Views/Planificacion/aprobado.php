@@ -8,13 +8,15 @@ adminMenu($data);
 <script>
   const resultInst = <?= json_encode($data['dataInstructor']) ?>;
   const resultSalon = <?= json_encode($data['dataSalon']) ?>;
-  const nLunes = <?= json_encode($data['pla_lunes']) ?>;
-  const nMartes = <?= json_encode($data['pla_martes']) ?>;
-  const nMiercoles = <?= json_encode($data['pla_miercoles']) ?>;
-  const nJueves = <?= json_encode($data['pla_jueves']) ?>;
-  const nViernes = <?= json_encode($data['pla_viernes']) ?>;
-  const nSabado = <?= json_encode($data['pla_sabado']) ?>;
-  const nDomingo = <?= json_encode($data['pla_domingo']) ?>;
+  const diasSemanaEdit = {
+    LU: <?= json_encode($data['pla_lunes']) ?>,
+    MA: <?= json_encode($data['pla_martes']) ?>,
+    MI: <?= json_encode($data['pla_miercoles']) ?>,
+    JU: <?= json_encode($data['pla_jueves']) ?>,
+    VI: <?= json_encode($data['pla_viernes']) ?>,
+    SA: <?= json_encode($data['pla_sabado']) ?>,
+    DO: <?= json_encode($data['pla_domingo']) ?>
+  };
   const fechaIni = "<?= $data['pla_fecha_incio'] ?>";
   const fechaFin = "<?= $data['pla_fecha_fin'] ?>";
   const accionFormAut = "Aut";

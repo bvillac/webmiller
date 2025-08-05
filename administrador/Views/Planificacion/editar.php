@@ -17,13 +17,6 @@ require_once "Views/Planificacion/Modals/modalSalon.php";
     SA: <?= json_encode($data['tpla_sabado']) ?>,
     DO: <?= json_encode($data['tpla_domingo']) ?>
   };
-  // const nLunes = <?= json_encode($data['tpla_lunes']) ?>;
-  // const nMartes = <?= json_encode($data['tpla_martes']) ?>;
-  // const nMiercoles = <?= json_encode($data['tpla_miercoles']) ?>;
-  // const nJueves = <?= json_encode($data['tpla_jueves']) ?>;
-  // const nViernes = <?= json_encode($data['tpla_viernes']) ?>;
-  // const nSabado = <?= json_encode($data['tpla_sabado']) ?>;
-  // const nDomingo = <?= json_encode($data['tpla_domingo']) ?>;
   const fechaIni = "<?= $data['tpla_fecha_incio'] ?>";
   const fechaFin = "<?= $data['tpla_fecha_fin'] ?>";
   const accionForm = "Edit";

@@ -96,7 +96,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //console.log("es nuevo");
   }
 
-  if (typeof accionFormAut !== "undefined") {
+ 
+  if (typeof accionFormAut !== "undefined" && accionFormAut === "Aut") {
     // La variable existe EDITAR
     fntupdateInstructor(resultInst);
     fntupdateSalones(resultSalon);
@@ -181,10 +182,11 @@ $(document).ready(function () {
 
   //Autorizados
   $("#btn_siguienteAut").click(function () {
-    generarPlanificacionAut("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionAut("Next", diasSemanaEdit, fechaIni, fechaFin);
   });
+
   $("#btn_anteriorAut").click(function () {
-    generarPlanificacionAut("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionAut("Back", diasSemanaEdit, fechaIni, fechaFin);
   });
 
   $("#cmd_clonar").click(function () {
@@ -781,13 +783,11 @@ function generarPlanificacionEdit(accionMove, diasSemanaEdit, fechaIni, fechaFin
   tabla.find("tbody").empty();
 
   const nLetIni = obtenerCodigoDia();
-  //const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
-  //const nDia = obtenerDiaSeleccionado(nLetIni, diasSemanaEdit);
 
   for (let hora = 8; hora < 22; hora++) {
     const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
     Grid.forEach(instr => {
-      //const td = generarCeldaHorarioEdit(nLetIni, hora, instr, nDia);
+      instr["Horario"]=[]; // Inicializar Horario como un array vacío para que solo pudeda agregar horas de la temporal y no de las por defecto
       const td = generarCeldaHorario(nLetIni, hora, instr);
       fila.append(td);
     });
@@ -823,23 +823,6 @@ function existeHorarioEdit(horariosArray, nDiaHora) {
   if (!Array.isArray(horariosArray) || !nDiaHora) return false;
   return horariosArray.some(h => h.startsWith(nDiaHora));
 }
-
-// function obtenerDiaSeleccionado(nLetIni, dias) {
-//   const mapaDias = {
-//     LU: dias.LU,
-//     MA: dias.MA,
-//     MI: dias.MI,
-//     JU: dias.JU,
-//     VI: dias.VI,
-//     SA: dias.SA,
-//     DO: dias.DO
-//   };
-
-//   const dia = mapaDias[nLetIni];
-//   return typeof dia === "string" && dia.trim() !== "" ? dia.split(",") : [];
-// }
-
-//####################################################
 
 
 //Eliminar Planificacion 
@@ -983,15 +966,35 @@ function generarPlanificacionAut(accionMove, diasSemanaEdit, fechaIni, fechaFin)
   tabla.find("tbody").empty();
 
   const nLetIni = obtenerCodigoDia();
-  //const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
-
   for (let hora = 8; hora < 22; hora++) {
     const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
     Grid.forEach(instr => {
-      //const td = generarCeldaHorarioEdit(nLetIni, hora, instr, nDia);
-      const td = generarCeldaHorario(nLetIni, hora, instr);
+      const td = generarCeldaHorarioAut(nLetIni, hora, instr);
       fila.append(td);
     });
     tabla.find("tbody").append(fila);
+  }
+}
+
+function generarCeldaHorarioAut(nLetIni, hora, instr) {
+  const nDiaHora = nLetIni + hora;
+  // Generar un ID base para la celda  Esto es para identificar la celda de forma única y evitar conflictos con reservas temporales
+  // Ejemplo: "LU_08_123" para Lunes a las 8:00 con instructor 123
+  const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
+
+  const reservaTemporal = obtenerHorarioCoincidente(idBase);// Verifica si existe una reserva temporal
+  if (reservaTemporal) {
+    const idPlan = reservaTemporal;
+    const idsSalon = idPlan.split("_").pop(); // retorna el último elemento del idPlan
+    const salon = buscarSalonColor(idsSalon);
+    return `
+      <td>
+        <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
+          style="color:white; background-color:${salon["Color"]}" >
+          ${salon["Nombre"]}
+        </button>
+      </td>`;
+  } else {
+    return `<td></td>`;
   }
 }
