@@ -309,19 +309,6 @@ function contarFechaDia(accionMove, fecha) {
     return nuevaFecha;
 }
 
-//Busca si existe un codigo en la lista JSON
-/*function codigoExiste(value, property, lista) {
-    if (lista) {
-        var array = JSON.parse(lista);
-        for (var i = 0; i < array.length; i++) {
-            if (array[i][property] == value) {
-                return false;
-            }
-        }
-    }
-    return true;
-}*/
-
 // Busca si existe un código en la lista JSON
 // Retorna true si el código no existe, falso si ya existe
 // Si listaJson es null o undefined, retorna verdadero

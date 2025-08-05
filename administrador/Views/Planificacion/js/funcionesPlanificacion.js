@@ -85,11 +85,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
   //FUNCIONES PARA EDICION
-  if (typeof accionForm !== "undefined") {
+  if (typeof accionForm !== "undefined" && accionForm === "Edit") {
     // La variable existe EDITAR
     fntupdateInstructor(resultInst);
     fntupdateSalones(resultSalon);
-    generarPlanificacionEdit("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    CargarHorarioTemp(diasSemanaEdit);
+    generarPlanificacionEdit("Edit", diasSemanaEdit, fechaIni, fechaFin);
   } else {
     // La variable no existe NUEVO
     //console.log("es nuevo");
@@ -99,7 +100,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // La variable existe EDITAR
     fntupdateInstructor(resultInst);
     fntupdateSalones(resultSalon);
-    generarPlanificacionAut("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    CargarHorarioTemp(diasSemanaEdit);
+    generarPlanificacionAut("Edit", diasSemanaEdit, fechaIni, fechaFin);
+    //generarPlanificacionAut("Edit", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
   } else {
     // La variable no existe NUEVO
     //console.log("es nuevo");
@@ -169,10 +172,10 @@ $(document).ready(function () {
   });
 
   $("#btn_siguienteEdit").click(function () {
-    generarPlanificacionEdit("Next", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionEdit("Next", diasSemanaEdit, fechaIni, fechaFin);
   });
   $("#btn_anteriorEdit").click(function () {
-    generarPlanificacionEdit("Back", nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin);
+    generarPlanificacionEdit("Back", diasSemanaEdit, fechaIni, fechaFin);
   });
 
 
@@ -315,40 +318,32 @@ function fntHorasInstructor(ids) {
 
 
 function fntNameHoras(str) {
-  let nDia = str.substring(0, 2);
-  let nHora = str.substring(2, 4);
-  let result = "";
-  switch (nDia) {
-    case "LU":
-      result = "LUN-" + nHora + ":00";
-      break;
-    case "MA":
-      result = "MAR-" + nHora + ":00";
-      break;
-    case "MI":
-      result = "MIE-" + nHora + ":00";
-      break;
-    case "JU":
-      result = "JUE-" + nHora + ":00";
-      break;
-    case "VI":
-      result = "VIE-" + nHora + ":00";
-      break;
-    case "SA":
-      result = "SÁB-" + nHora + ":00";
-      break;
-    default:
-  }
-  return result;
+  if (!str || str.length < 4) return "";
+
+  const dias = {
+    LU: "LUN",
+    MA: "MAR",
+    MI: "MIE",
+    JU: "JUE",
+    VI: "VIE",
+    SA: "SÁB",
+    DO: "DOM"
+  };
+
+  const nDia = str.substring(0, 2).toUpperCase();
+  const nHora = str.substring(2, 4).padStart(2, "0");
+
+  return dias[nDia] ? `${dias[nDia]}-${nHora}:00` : "";
 }
+
 
 /**************** GENERAR PLANIFICACION  NUEVA******************/
 function generarPlanificacion(accionMove) {
   const tabla = $("#dts_Planificiacion");
   //extrae los datos del instructor planificado en su ingreso
-  const grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
+  const Grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
 
-  if (!grid.length) return;
+  if (!Grid.length) return;
 
   const fechaIni = $("#dtp_fecha_desde").val();
   const fechaFin = $("#dtp_fecha_hasta").val();
@@ -368,70 +363,37 @@ function generarPlanificacion(accionMove) {
 
 
   // Crear fila de encabezado con las horas y los nombres de los instructores
-  const filaEncabezado = $("<tr></tr>").append("<th>Horas</th>");
-  grid.forEach(instr => {
-    const nombre = instr["Nombre"].substring(0, 15).toUpperCase();
-    filaEncabezado.append(`<th>${nombre}</th>`);
-  });
-
+  const encabezado = crearEncabezado(Grid);
   $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
-  tabla.find("thead").html(filaEncabezado);
+  tabla.find("thead").html(encabezado);
   tabla.find("tbody").empty();
 
-  const nLetIni = obtenerCodigoDia($("#FechaDia").text());//Obtiene el código del día actual iniciales
-  if (codigoExiste(nLetIni, "dia", sessionStorage.dts_PlaTemporal)) {
-    // Si ya existe planificación para el día, debería cargar los datos que estan en la sessionStorage
-    generarTablaDesdeTemporal(nLetIni, tabla);
-  } else {
-    // Si no existe planificación, se crea una nueva tabla con los datos del instructor
-    for (let hora = 8; hora < 22; hora++) {
-      const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
-      grid.forEach(instr => {
-        const td = generarCeldaHorario(nLetIni, hora, instr);
-        fila.append(td);
-      });
-      tabla.find("tbody").append(fila);
-    }
-
-  }
-
-
-}
-
-function generarTablaDesdeTemporal(nLetIni, tabla) {
-  const rawData = sessionStorage.getItem('dts_PlaTemporal');
-  if (!rawData) return;
-
-  const datos = JSON.parse(rawData);
-
+  const nLetIni = obtenerCodigoDia();//Obtiene el código del día actual iniciales
+  // Si no existe planificación, se crea una nueva tabla con los datos del instructor
   for (let hora = 8; hora < 22; hora++) {
     const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
-
-    // Filtrar todos los datos que coincidan con esta hora
-    const datosHora = datos.filter(item => parseInt(item.horaInicio) === hora);
-
-    // Si no hay datos para esta hora, agregamos una celda vacía
-    if (datosHora.length === 0) {
-      fila.append('<td colspan="5">-</td>'); // Ajusta colspan según lo que necesites mostrar
-    } else {
-      datosHora.forEach(item => {
-        const td = generarCeldaHorarioDesdeTemporal(nLetIni, item);
-        fila.append(td);
-      });
-    }
-
+    Grid.forEach(instr => {
+      const td = generarCeldaHorario(nLetIni, hora, instr);
+      fila.append(td);
+    });
     tabla.find("tbody").append(fila);
   }
+
 }
 
-
+function crearEncabezado(Grid) {
+  const fila = $("<tr></tr>").append("<th>Horas</th>");
+  Grid.forEach(instr => {
+    fila.append(`<th>${instr.Nombre.substring(0, 15).toUpperCase()}</th>`);
+  });
+  return fila;
+}
 
 
 function obtenerHorarioCoincidente(nDiaHora) {
   const plaTemporal = sessionStorage.dts_PlaTemporal
     ? JSON.parse(sessionStorage.dts_PlaTemporal)
     : [];
-
   for (const item of plaTemporal) {
     const coincidencia = item.horario
       .split(',')
@@ -445,29 +407,35 @@ function obtenerHorarioCoincidente(nDiaHora) {
 
 
 
-
 function generarCeldaHorario(nLetIni, hora, instr) {
   const nDiaHora = nLetIni + hora;
+  // Generar un ID base para la celda  Esto es para identificar la celda de forma única y evitar conflictos con reservas temporales
+  // Ejemplo: "LU_08_123" para Lunes a las 8:00 con instructor 123
   const idBase = `${nLetIni}_${hora}_${instr["ids"]}`;
 
-  const reservaTemporal = obtenerHorarioCoincidente(idBase);
-
-  if (existeHorario(instr["Horario"], nDiaHora)) {
-    const salon = buscarSalonColor(instr["Salones"].split(",")[0]);
-    const idPlan = `${idBase}_${salon["ids"]}`;
-    return `
-      <td>
-        <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
-          style="color:white; background-color:${salon["Color"]}"
-          onclick="fnt_eventoPlanificado(this)">
-          ${salon["Nombre"]}
-        </button>
-      </td>`;
-  } else if (reservaTemporal) {//Verifica si existe una reserva temporal
+  const reservaTemporal = obtenerHorarioCoincidente(idBase);// Verifica si existe una reserva temporal
+  // Si existe una reserva temporal, se muestra el botón con el nombre del salón y el color
+  // Si no existe, se verifica si hay un horario asignado al instructor
+  // Si no hay horario asignado, se muestra un botón para agregar 
+  if (reservaTemporal) {
     const idPlan = reservaTemporal;
     const idsSalon = idPlan.split("_").pop(); // retorna el último elemento del idPlan
     const salon = buscarSalonColor(idsSalon);
-    return `
+    return CeldaReservada(idPlan, salon);
+
+  } else if (existeHorario(instr["Horario"], nDiaHora)) {//Verifica si existe una reserva temporal
+    const salon = buscarSalonColor(instr["Salones"].split(",")[0]);
+    // Si existe un salón asignado, se muestra el botón con el nombre del salón y el color
+    const idPlan = `${idBase}_${salon["ids"]}`;
+    return CeldaReservada(idPlan, salon);
+
+  } else {
+    return CeldaDisponible(idBase);
+  }
+}
+
+function CeldaReservada(idPlan, salon) {
+  return `
       <td>
         <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
           style="color:white; background-color:${salon["Color"]}"
@@ -475,23 +443,37 @@ function generarCeldaHorario(nLetIni, hora, instr) {
           ${salon["Nombre"]}
         </button>
       </td>`;
-  } else {
-    return `
-      <td>
-        <button type="button" id="${idBase}" class="btn ms-auto btn-lg btn-light"
-          onclick="fnt_eventoPlanificado(this)">
-          AGREGAR
-        </button>
-      </td>`;
-  }
 }
 
-
+function CeldaDisponible(idPlan) {
+  return `
+    <td>
+      <button type="button" id="${idPlan}" class="btn ms-auto btn-lg btn-light"
+        onclick="fnt_eventoPlanificado(this)">
+        AGREGAR
+      </button>
+    </td>`;
+}
 
 
 function existeHorario(nHorArray, nDiaHora) {
-  return nHorArray.split(",").includes(nDiaHora);
+  console.log("nHorArray", nHorArray, "nDiaHora", nDiaHora);
+  if (!nHorArray) return false; // Si es null, undefined o vacío, no existe
+
+  // Si ya es un array, usamos directamente includes()
+  if (Array.isArray(nHorArray)) {
+    return nHorArray.includes(nDiaHora);
+  }
+
+  // Si es string, dividimos y buscamos
+  if (typeof nHorArray === "string") {
+    return nHorArray.split(",").includes(nDiaHora);
+  }
+
+  // En cualquier otro caso, no se considera existente
+  return false;
 }
+
 
 function buscarSalonColor(ids) {
   const Grid = sessionStorage.dts_SalonCentro ? JSON.parse(sessionStorage.dts_SalonCentro) : [];
@@ -598,17 +580,11 @@ function guardarTemp() {
 
   if (codigoExiste(nLetIni, "dia", sessionStorage.dts_PlaTemporal)) {
     guardarFila(arrayList, nuevaFila);
-    //arrayList.push(nuevaFila);
-    //actualizarStorage(arrayList);
-    //mostrarMensaje("Información!", "Planificación Temporal Guardada.", "success");
   } else {
     confirmarModificacion(() => {
       eliminarItemsDia(nLetIni);//elimina los items del dia seleccionado y filtra los demás
       const actualizada = JSON.parse(sessionStorage.dts_PlaTemporal);
       guardarFila(actualizada, nuevaFila);
-      //actualizada.push(nuevaFila);
-      //actualizarStorage(actualizada);
-      //mostrarMensaje("Información!", "Planificación Temporal Guardada.", "success");
     });
   }
 }
@@ -781,8 +757,9 @@ function fntupdateSalones(resultSalon) {
 
 //####################################################
 
-function generarPlanificacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
-
+//function generarPlanificacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
+function generarPlanificacionEdit(accionMove, diasSemanaEdit, fechaIni, fechaFin) {
+  const tabla = $("#dts_Planificiacion");
   const Grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
   if (!Grid.length) return;
 
@@ -791,7 +768,6 @@ function generarPlanificacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJuev
   } else {
     const estadoFecha = estaEnRango(accionMove, fechaDia, obtenerFormatoFecha(fechaIni), obtenerFormatoFecha(fechaFin));
     if (estadoFecha.estado === "FUE") {
-
       swal("Atención!", "Fechas fuera de Rango", "error");
       return;
     }
@@ -801,142 +777,67 @@ function generarPlanificacionEdit(accionMove, nLunes, nMartes, nMiercoles, nJuev
   // Establecer encabezado
   const encabezado = crearEncabezado(Grid);
   $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
-  $("#dts_Planificiacion thead").html(encabezado);
-  $("#dts_Planificiacion tbody").empty();
+  tabla.find("thead").html(encabezado);
+  tabla.find("tbody").empty();
 
-  const nLetIni = obtenerCodigoDia($("#FechaDia").text());
-  const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
+  const nLetIni = obtenerCodigoDia();
+  //const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
+  //const nDia = obtenerDiaSeleccionado(nLetIni, diasSemanaEdit);
 
-  let hora = 8;
-  for (let i = 0; i < 14; i++) {
-    const filaHTML = crearFilaHora(hora, nLetIni, Grid, nDia);
-    $("#dts_Planificiacion tbody").append(filaHTML);
-    hora++;
-  }
-}
-
-function crearEncabezado(Grid) {
-  const fila = $("<tr></tr>").append("<th>Horas</th>");
-  Grid.forEach(instr => {
-    fila.append(`<th>${instr.Nombre.substring(0, 15).toUpperCase()}</th>`);
-  });
-  return fila;
-}
-
-function obtenerCodigoDia(texto) {
-  let code = texto.toUpperCase().substring(0, 2);
-  return code === "SÁ" ? "SA" : code;
-}
-
-function obtenerDiaSeleccionado(nLetIni, dias) {
-  switch (nLetIni) {
-    case "LU": return dias.nLunes.split(",");
-    case "MA": return dias.nMartes.split(",");
-    case "MI": return dias.nMiercoles.split(",");
-    case "JU": return dias.nJueves.split(",");
-    case "VI": return dias.nViernes.split(",");
-    case "SA": return dias.nSabado.split(",");
-    case "DO": return dias.nDomingo.split(",");
-    default: return [];
-  }
-}
-
-function crearFilaHora(hora, nLetIni, gridInstructores, horariosDelDia) {
-  let filaHTML = `<tr><td>${hora}:00</td>`;
-
-  gridInstructores.forEach(instr => {
-    const baseId = `${nLetIni}_${hora}_${instr.ids}`;
-    const coincidencias = existeHorarioEditar(horariosDelDia, baseId);
-
-    const celda = coincidencias !== "0"
-      ? crearCeldaAsignada(baseId, coincidencias[0])
-      : crearCeldaDisponible(baseId);
-
-    filaHTML += celda;
-  });
-
-  filaHTML += "</tr>";
-  return filaHTML;
-}
-
-
-function crearCeldaAsignada(baseId, coincidencia) {
-  const partes = coincidencia.split("_");
-  const idSalon = partes[3];
-  const objSalon = buscarSalonColor(idSalon);
-
-  if (!objSalon || !objSalon.ids || !objSalon.Color) {
-    return `<td><span class="text-danger">Salón inválido</span></td>`;
+  for (let hora = 8; hora < 22; hora++) {
+    const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
+    Grid.forEach(instr => {
+      //const td = generarCeldaHorarioEdit(nLetIni, hora, instr, nDia);
+      const td = generarCeldaHorario(nLetIni, hora, instr);
+      fila.append(td);
+    });
+    tabla.find("tbody").append(fila);
   }
 
-  const idPlan = `${baseId}_${objSalon.ids}`;
 
-  return `
-    <td>
-      <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
-        style="color:white; background-color:${objSalon.Color}"
-        onclick="fnt_eventoPlanificado(this)">
-        ${objSalon.Nombre}
-      </button>
-    </td>`;
-}
-
-function crearCeldaDisponible(idPlan) {
-  return `
-    <td>
-      <button type="button" id="${idPlan}" class="btn ms-auto btn-lg btn-light"
-        onclick="fnt_eventoPlanificado(this)">
-        AGREGAR
-      </button>
-    </td>`;
 }
 
 
 
-/*function crearFilaHora(hora, nLetIni, Grid, nDiaArray) {
-  let fila = `<tr><td>${hora}:00</td>`;
+function CargarHorarioTemp(diasSemanaEdit) {
+  const resultado = Object.entries(diasSemanaEdit)
+    .filter(([_, horario]) => horario && horario.length > 0)
+    .map(([dia, horario]) => {
+      // Convertir a string si es array, dejar como está si ya es string
+      const horarioStr = Array.isArray(horario)
+        ? horario.join(',')
+        : (typeof horario === 'string' ? horario : '');
 
-  Grid.forEach(instr => {
-    let idPlan = `${nLetIni}_${hora}_${instr.ids}`;
-    const coincidencias = existeHorarioEditar(nDiaArray, idPlan);
-    let td = "";
+      return {
+        dia,
+        horario: horarioStr,
+        fecha: ''
+      };
+    });
 
-    if (coincidencias !== "0") {
-      const salonArray = coincidencias[0].split("_");
-      const idSalon = salonArray[3];
-      const objSalon = buscarSalonColor(idSalon);
-      idPlan += `_${objSalon.ids}`;
-
-      td = `
-        <td>
-          <button type="button" id="${idPlan}" class="btn ms-auto btn-lg asignado-true"
-            style="color:white; background-color:${objSalon.Color}"
-            onclick="fnt_eventoPlanificado(this)">
-            ${objSalon.Nombre}
-          </button>
-        </td>`;
-    } else {
-      td = `
-        <td>
-          <button type="button" id="${idPlan}" class="btn ms-auto btn-lg btn-light"
-            onclick="fnt_eventoPlanificado(this)">
-            AGREGAR
-          </button>
-        </td>`;
-    }
-
-    fila += td;
-  });
-
-  fila += "</tr>";
-  return fila;
-}*/
-
-function existeHorarioEditar(nHorArray, nDiaHora) {
-  const resultados = nHorArray.filter(element => element.includes(nDiaHora));
-  return resultados.length > 0 ? resultados : "0";
+  // Guardar en sessionStorage
+  sessionStorage.setItem('dts_PlaTemporal', JSON.stringify(resultado));
 }
 
+function existeHorarioEdit(horariosArray, nDiaHora) {
+  if (!Array.isArray(horariosArray) || !nDiaHora) return false;
+  return horariosArray.some(h => h.startsWith(nDiaHora));
+}
+
+// function obtenerDiaSeleccionado(nLetIni, dias) {
+//   const mapaDias = {
+//     LU: dias.LU,
+//     MA: dias.MA,
+//     MI: dias.MI,
+//     JU: dias.JU,
+//     VI: dias.VI,
+//     SA: dias.SA,
+//     DO: dias.DO
+//   };
+
+//   const dia = mapaDias[nLetIni];
+//   return typeof dia === "string" && dia.trim() !== "" ? dia.split(",") : [];
+// }
 
 //####################################################
 
@@ -1058,10 +959,9 @@ function fntAutorizarPlanificacion(ids) {
   });
 }
 
-
-
-function generarPlanificacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
-
+//function generarPlanificacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo, fechaIni, fechaFin) {
+function generarPlanificacionAut(accionMove, diasSemanaEdit, fechaIni, fechaFin) {
+  const tabla = $("#dts_PlanificiacionAut");
   const Grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
   if (!Grid.length) return;
 
@@ -1079,18 +979,19 @@ function generarPlanificacionAut(accionMove, nLunes, nMartes, nMiercoles, nJueve
   // Establecer encabezado
   const encabezado = crearEncabezado(Grid);
   $("#FechaDia").html(obtenerFechaConLetras(fechaDia));
-  $("#dts_PlanificiacionAut thead").html(encabezado);
-  $("#dts_PlanificiacionAut tbody").empty();
+  tabla.find("thead").html(encabezado);
+  tabla.find("tbody").empty();
 
-  const nLetIni = obtenerCodigoDia($("#FechaDia").text());
-  const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
+  const nLetIni = obtenerCodigoDia();
+  //const nDia = obtenerDiaSeleccionado(nLetIni, { nLunes, nMartes, nMiercoles, nJueves, nViernes, nSabado, nDomingo });
 
-  let hora = 8;
-  for (let i = 0; i < 14; i++) {
-    const filaHTML = crearFilaHora(hora, nLetIni, Grid, nDia);
-    $("#dts_PlanificiacionAut tbody").append(filaHTML);
-    hora++;
+  for (let hora = 8; hora < 22; hora++) {
+    const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
+    Grid.forEach(instr => {
+      //const td = generarCeldaHorarioEdit(nLetIni, hora, instr, nDia);
+      const td = generarCeldaHorario(nLetIni, hora, instr);
+      fila.append(td);
+    });
+    tabla.find("tbody").append(fila);
   }
 }
-
-

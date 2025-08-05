@@ -8,17 +8,27 @@ require_once "Views/Planificacion/Modals/modalSalon.php";
 <script>
   const resultInst = <?= json_encode($data['dataInstructor']) ?>;
   const resultSalon = <?= json_encode($data['dataSalon']) ?>;
-  const nLunes = <?= json_encode($data['tpla_lunes']) ?>;
-  const nMartes = <?= json_encode($data['tpla_martes']) ?>;
-  const nMiercoles = <?= json_encode($data['tpla_miercoles']) ?>;
-  const nJueves = <?= json_encode($data['tpla_jueves']) ?>;
-  const nViernes = <?= json_encode($data['tpla_viernes']) ?>;
-  const nSabado = <?= json_encode($data['tpla_sabado']) ?>;
-  const nDomingo = <?= json_encode($data['tpla_domingo']) ?>;
+   const diasSemanaEdit = {
+    LU: <?= json_encode($data['tpla_lunes']) ?>,
+    MA: <?= json_encode($data['tpla_martes']) ?>,
+    MI: <?= json_encode($data['tpla_miercoles']) ?>,
+    JU: <?= json_encode($data['tpla_jueves']) ?>,
+    VI: <?= json_encode($data['tpla_viernes']) ?>,
+    SA: <?= json_encode($data['tpla_sabado']) ?>,
+    DO: <?= json_encode($data['tpla_domingo']) ?>
+  };
+  // const nLunes = <?= json_encode($data['tpla_lunes']) ?>;
+  // const nMartes = <?= json_encode($data['tpla_martes']) ?>;
+  // const nMiercoles = <?= json_encode($data['tpla_miercoles']) ?>;
+  // const nJueves = <?= json_encode($data['tpla_jueves']) ?>;
+  // const nViernes = <?= json_encode($data['tpla_viernes']) ?>;
+  // const nSabado = <?= json_encode($data['tpla_sabado']) ?>;
+  // const nDomingo = <?= json_encode($data['tpla_domingo']) ?>;
   const fechaIni = "<?= $data['tpla_fecha_incio'] ?>";
   const fechaFin = "<?= $data['tpla_fecha_fin'] ?>";
   const accionForm = "Edit";
   const IdsTemp = <?= $data['tpla_id'] ?>;
+
 </script>
 
 <div id="contentAjax"></div>

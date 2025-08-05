@@ -37,10 +37,15 @@ class PlanificacionModel extends MysqlAcademico
 
     public function consultarDatosId(int $Ids)
     {
-        $sql = "SELECT * FROM " . $this->db_name . ".planificacion_temp where tpla_id={$Ids} and tpla_estado_logico!=0;";
-        $request = $this->select($sql);
+        $sql = "SELECT *
+            FROM {$this->db_name}.planificacion_temp
+            WHERE tpla_estado_logico != 0 AND tpla_id = ?";
+
+        $params = [$Ids];
+        $request = $this->select($sql, $params);
         return $request;
     }
+
 
     public function consultarDatosIdAut(int $Ids)
     {
@@ -50,7 +55,7 @@ class PlanificacionModel extends MysqlAcademico
     }
 
 
-    public function insertData($Cabecera, $Detalle)
+    /*public function insertData($Cabecera, $Detalle)
     {
         $diaLunes = "";
         $diaMartes = "";
@@ -118,7 +123,7 @@ class PlanificacionModel extends MysqlAcademico
                     1
                 );
                 $SqlQuery = "INSERT INTO " . $this->db_name . ".planificacion_temp 
-				    (`cat_id`,
+                    (`cat_id`,
                     `tpla_fecha_incio`,
                     `tpla_fecha_fin`,
                     `tpla_lunes`,
@@ -150,13 +155,103 @@ class PlanificacionModel extends MysqlAcademico
             $arroout["message"] = "Ya exite el Planificación con esta fecha.";
             return $arroout;
         }
+    }*/
+
+
+    public function insertData($Cabecera, $Detalle)
+    {
+        $diasSemana = [
+            'LU' => '',
+            'MA' => '',
+            'MI' => '',
+            'JU' => '',
+            'VI' => '',
+            'SA' => '',
+            'DO' => ''
+        ];
+
+        $con = $this->getConexion();
+        $sql = "SELECT * FROM {$this->db_name}.planificacion_temp 
+            WHERE tpla_estado_logico = 1 
+              AND cat_id = :centro 
+              AND tpla_fecha_incio = :fechaInicio";
+
+        $params = [
+            ':centro' => $Cabecera['centro'],
+            ':fechaInicio' => $Cabecera['fechaInicio']
+        ];
+
+        $request = $this->select($sql, $params);
+        if (!empty($request)) {
+            return [
+                "status" => false,
+                "message" => "Ya existe una planificación con esta fecha."
+            ];
+        }
+
+        $con->beginTransaction();
+        try {
+            $rangoDia = "";
+
+            foreach ($Detalle as $item) {
+                $dia = strtoupper($item['dia']);
+                if (array_key_exists($dia, $diasSemana)) {
+                    $diasSemana[$dia] = $item['horario'];
+                    $fecha = DateTime::createFromFormat('Y-m-d', $item['fecha']);
+                    if ($fecha) {
+                        $rangoDia .= "$dia:" . $fecha->format('Y-m-d') . ";";
+                    }
+                }
+            }
+
+            $arrData = [
+                $Cabecera['centro'],
+                $Cabecera['fechaInicio'],
+                $Cabecera['fechaFin'],
+                $diasSemana['LU'],
+                $diasSemana['MA'],
+                $diasSemana['MI'],
+                $diasSemana['JU'],
+                $diasSemana['VI'],
+                $diasSemana['SA'],
+                $diasSemana['DO'],
+                $rangoDia,
+                'T',
+                retornaUser(),
+                1
+            ];
+
+            $sqlInsert = "INSERT INTO {$this->db_name}.planificacion_temp (
+                            cat_id, tpla_fecha_incio, tpla_fecha_fin,
+                            tpla_lunes, tpla_martes, tpla_miercoles,
+                            tpla_jueves, tpla_viernes, tpla_sabado, tpla_domingo,
+                            tpla_fechas_rango, tpla_estado, tpla_usuario_creacion, tpla_estado_logico
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            $this->insertConTrans($con, $sqlInsert, $arrData);
+
+            putMessageLogFile("Insertado correctamente");
+            putMessageLogFile($sqlInsert);
+            putMessageLogFile(print_r($arrData, true));
+
+            $con->commit();
+
+            return ["status" => true, "numero" => 0];
+        } catch (Exception $e) {
+            $con->rollBack();
+            return [
+                "status" => false,
+                "message" => "Error al insertar planificación: " . $e->getMessage()
+            ];
+        }
     }
 
 
 
 
 
-    public function updateData($Cabecera, $Detalle)
+
+    /*public function updateData($Cabecera, $Detalle)
     {
         try {
             $Ids = $Cabecera['ids'];
@@ -194,19 +289,7 @@ class PlanificacionModel extends MysqlAcademico
                 }
             }
 
-            /*$arrData = array(
-                $Cabecera['fechaInicio'],
-                $Cabecera['fechaFin'],
-                empty(!$diaLunes) ? $diaLunes : "",
-                empty(!$diaMartes) ? $diaMartes : "",
-                empty(!$diaMiercoles) ? $diaMiercoles : "",
-                empty(!$diaJueves) ? $diaJueves : "",
-                empty(!$diaViernes) ? $diaViernes : "",
-                empty(!$diaSabado) ? $diaSabado : "",
-                empty(!$diaDomingo) ? $diaDomingo : "",
-                $rangoDia,
-                retornaUser()
-            );*/
+
 
             $diaLunes = $diaLunes ?? "";
             $diaMartes = $diaMartes ?? "";
@@ -233,7 +316,7 @@ class PlanificacionModel extends MysqlAcademico
 
             $sql = "UPDATE " . $this->db_name . ".planificacion_temp 
                         SET tpla_fecha_incio=?,tpla_fecha_fin=?,
-						tpla_lunes = ?, tpla_martes = ?,tpla_miercoles = ?,tpla_jueves = ?,tpla_viernes = ?,tpla_sabado = ?,tpla_domingo = ?,
+                        tpla_lunes = ?, tpla_martes = ?,tpla_miercoles = ?,tpla_jueves = ?,tpla_viernes = ?,tpla_sabado = ?,tpla_domingo = ?,
                         tpla_fechas_rango = ?,tpla_usuario_modificacion = ?,tpla_fecha_modificacion = CURRENT_TIMESTAMP() WHERE tpla_id={$Ids}  ";
             $request = $this->update($sql, $arrData);
             $arroout["status"] = ($request) ? true : false;
@@ -245,7 +328,64 @@ class PlanificacionModel extends MysqlAcademico
             $arroout["message"] = "Fallo: " . $e->getMessage();
             return $arroout;
         }
+    }*/
+
+    public function updateData($Cabecera, $Detalle)
+    {
+        try {
+            $Ids = $Cabecera['ids'];
+            $diasSemana = ['LU' => '', 'MA' => '', 'MI' => '', 'JU' => '', 'VI' => '', 'SA' => '', 'DO' => ''];
+            $rangoDia = "";
+
+            foreach ($Detalle as $item) {
+                $dia = $item['dia'];
+                $fecha = isset($item['fecha']) ? date("Y-m-d", strtotime($item['fecha'])) : '';
+                $horario = $item['horario'] ?? '';
+
+                if (array_key_exists($dia, $diasSemana)) {
+                    $diasSemana[$dia] = $horario;
+                    $rangoDia .= $dia . ':' . $fecha . ';';
+                }
+            }
+
+            $arrData = [
+                $Cabecera['fechaInicio'] ?? '',
+                $Cabecera['fechaFin'] ?? '',
+                $diasSemana['LU'],
+                $diasSemana['MA'],
+                $diasSemana['MI'],
+                $diasSemana['JU'],
+                $diasSemana['VI'],
+                $diasSemana['SA'],
+                $diasSemana['DO'],
+                $rangoDia,
+                retornaUser()
+            ];
+
+            $sql = "UPDATE {$this->db_name}.planificacion_temp 
+                SET tpla_fecha_incio = ?, tpla_fecha_fin = ?,
+                    tpla_lunes = ?, tpla_martes = ?, tpla_miercoles = ?, 
+                    tpla_jueves = ?, tpla_viernes = ?, tpla_sabado = ?, tpla_domingo = ?,
+                    tpla_fechas_rango = ?, tpla_usuario_modificacion = ?, 
+                    tpla_fecha_modificacion = CURRENT_TIMESTAMP() 
+                WHERE tpla_id = ?";
+
+            $arrData[] = $Ids; // ID al final, para el WHERE
+            $request = $this->update($sql, $arrData);
+
+            return [
+                "status" => (bool) $request,
+                "numero" => 0
+            ];
+
+        } catch (Exception $e) {
+            return [
+                "status" => false,
+                "message" => "Fallo: " . $e->getMessage()
+            ];
+        }
     }
+
 
     public function deleteRegistro(int $Ids)
     {

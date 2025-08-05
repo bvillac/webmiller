@@ -114,6 +114,7 @@ class Planificacion extends Controllers
         if ($_SESSION['permisosMod']['r']) {
             if (is_numeric($ids)) {
                 $data = $this->model->consultarDatosId($ids);
+                //putMessageLogFile("Data 2: " . print_r($data, true));
                 if (empty($data)) {
                     echo "Datos no encontrados";
                 } else {
@@ -199,7 +200,7 @@ class Planificacion extends Controllers
                         $arrResponse = array('status' => true, 'numero' => $request["numero"], 'msg' => 'Datos Actualizados correctamente.');
                     }
                 } else {
-                    $arrResponse = array("status" => false, "msg" => 'No es posible almacenar los datos.');
+                    $arrResponse = array("status" => false, "msg" => 'No es posible almacenar los datos: '.$request["message"]);
                 }
             }
             echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
