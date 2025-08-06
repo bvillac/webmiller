@@ -155,7 +155,7 @@ class AsistenciaModel extends MysqlAcademico
                         cac_usuario_creacion, cac_estado_logico
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            $insertId = $this->insertConTrasn($con, $sqlInsert, $arrDataInsert);
+            $insertId = $this->insertConTrans($con, $sqlInsert, $arrDataInsert);
 
             // Actualizar asistencia en reservación
             $sqlUpdate = "UPDATE {$this->db_name}.reservacion 
@@ -165,7 +165,7 @@ class AsistenciaModel extends MysqlAcademico
                       WHERE res_id = ?";
 
             $updateData = ["A", $usuario, $reservacion['res_id']];
-            $this->updateConTrasn($con, $sqlUpdate, $updateData);
+            $this->updateConTrans($con, $sqlUpdate, $updateData);
 
             // Confirmar transacción
             $con->commit();

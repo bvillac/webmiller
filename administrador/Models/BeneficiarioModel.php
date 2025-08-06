@@ -104,7 +104,7 @@ class BeneficiarioModel extends MysqlAcademico
         $SqlQuery = "UPDATE " . $this->db_name . ".aprendisaje SET 
                         paq_id=?,idi_id=?,mas_id=?,cat_id=?,apr_numero_meses=?,apr_numero_horas=?,apr_observaciones=?,apr_examen_internacional=?,
                         apr_usuario_modificacion=?,apr_fecha_modificacion = CURRENT_TIMESTAMP() WHERE ben_id = {$Ids} ";
-        return $this->updateConTrasn($con, $SqlQuery, $arrData);
+        return $this->updateConTrans($con, $SqlQuery, $arrData);
     }
 
 
@@ -112,7 +112,7 @@ class BeneficiarioModel extends MysqlAcademico
     {
         $SqlQuery = "UPDATE " . $this->db_name . ".beneficiario SET ben_tipo = ?,ben_usuario_modificacion=?,
                         ben_fecha_modificacion = CURRENT_TIMESTAMP() WHERE ben_id = {$Ids} ";
-        return $this->updateConTrasn($con, $SqlQuery, $arrData);
+        return $this->updateConTrans($con, $SqlQuery, $arrData);
     }
 
 
@@ -130,10 +130,10 @@ class BeneficiarioModel extends MysqlAcademico
         $sql = "SELECT a.ben_id Ids,b.con_id ContId,b.con_numero NumeroContrato,a.ben_tipo TipoBenefiario,CONCAT(c.per_nombre,' ',c.per_apellido) Nombres,c.per_telefono Telefono, ";
         $sql .= "c.per_cedula Cedula,c.per_nombre Nombre,c.per_apellido Apellido,c.per_fecha_nacimiento FechaNacimiento,c.per_genero Genero, c.estado_logico Estado, ";
         $sql .= "c.per_direccion Direccion,a.ben_estado_logico Estado,FLOOR(DATEDIFF(CURDATE(),c.per_fecha_nacimiento) / 365.25) AS Edad ";
-        $sql .= "FROM db_academico.beneficiario a ";
-        $sql .= "	inner join db_academico.contrato b ";
+        $sql .= "FROM {$this->db_name}.beneficiario a ";
+        $sql .= "	inner join {$this->db_name}.contrato b ";
         $sql .= "		on a.con_id=b.con_id and b.con_estado_logico=1 ";
-        $sql .= "	inner join db_administrador.persona c ";
+        $sql .= "	inner join {$this->db_nameAdmin}.persona c ";
         $sql .= "        on a.per_id=c.per_id  ";
         $sql .= " where a.ben_estado_logico!=0 ";
 
@@ -147,6 +147,8 @@ class BeneficiarioModel extends MysqlAcademico
 				$sql .= " AND (c.per_nombre LIKE '%{$parametro}%' OR c.per_apellido LIKE '%{$parametro}%') ";
 			}
 		}
+
+
 		//$sql .= LIMIT;
 		$request = $this->select_all($sql);
 		return $request;

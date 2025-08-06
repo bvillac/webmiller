@@ -63,7 +63,7 @@ class SalonModel extends MysqlAcademico
                     `sal_color`,
                     `sal_usuario_creacion`,                   
                     `sal_estado_logico`) VALUES(?,?,?,?,?,?,?) ";
-                $Ids = $this->insertConTrasn($con, $SqlQuery, $arrData);
+                $Ids = $this->insertConTrans($con, $SqlQuery, $arrData);
                 $con->commit();
                 $arroout["status"] = true;
                 $arroout["numero"] = 0;
@@ -71,7 +71,7 @@ class SalonModel extends MysqlAcademico
             } catch (Exception $e) {
                 $con->rollBack();
                 //echo "Fallo: " . $e->getMessage();
-                throw $e;
+                //throw $e;
                 $arroout["message"] = $e->getMessage();
                 $arroout["status"] = false;
                 return $arroout;

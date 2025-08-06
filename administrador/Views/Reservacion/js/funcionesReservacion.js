@@ -508,35 +508,7 @@ function buscarInstructor(ids) {
   return 0;
 }
 
-/*function openModalAgenda(comp) { //
 
-  if($("#txt_CodigoBeneficiario").val() == "" || $("#txt_NombreBeneficirio").val() == "" ){
-    swal("Atención!", "Seleccionar un Beneficiarios", "info");
-    return;
-  }
-  
-  $('#txth_idsModal').val(comp.id);
-  DataArray = comp.id.split("_");
-  $('#txth_diaLetra').val(DataArray[0]);
-  var nDiaLetra = retornarDiaLetras(DataArray[0]);
-  var Hora = DataArray[1] + ":00";
-  $('#txth_hora').val(DataArray[1]);
-  let objInstructor = buscarInstructor(DataArray[2]);
-  let objSalon = buscarSalonColor(DataArray[3]);
-  $('#txth_salon').val(DataArray[3]);
-  $('#txt_color').val(objSalon["Color"]);
-  $('#lbl_Beneficiario').text($('#txt_NombreBeneficirio').val());
-  $('#txth_idsInstru').val(objInstructor["ids"]); 
-  
-  cargarBeneficiarios(comp.id);
-
-  document.querySelector('.modal-header').classList.replace("headerUpdate", "headerRegister");//Cambiar las Clases para los colores
-  document.querySelector('#btn_reservar').classList.replace("btn-info", "btn-primary");
-  document.querySelector('#btnText').innerHTML = "Reservar";
-  document.querySelector('#titleModal').innerHTML = "Día: " + nDiaLetra + " ->  Hora: " + Hora + " -> Salón: " + objSalon["Nombre"] + " -> Instructor: " + objInstructor["Nombre"];
-  document.querySelector("#formAgenda").reset();
-  $('#modalFormAgenda').modal('show');
-}*/
 
 function cargarBeneficiarios(ids) {
   let option = "";
@@ -648,62 +620,6 @@ function anularReservacion(ResId, HorId) {
 
 
 
-/*function reservarUsuario(accion) {
-  let idsModal = $("#txth_idsModal").val();
-  let pla_id = $("#txth_ids").val();
-  let ben_id = $("#txth_idBenef").val();
-  let ins_id = $("#txth_idsInstru").val();
-  let act_id = $("#cmb_actividad").val();
-  let niv_id = $("#cmb_nivel").val();
-  let uni_id = $("#cmb_NumeroNivel").val();
-  let sal_id = $("#txth_salon").val();
-  let hora = $("#txth_hora").val();
-  let diaLetra = $("#txth_diaLetra").val();
-
-  if (niv_id != 0) {
-    let objEnt = new Object();
-    objEnt.idsModal = idsModal;
-    objEnt.pla_id = pla_id;
-    objEnt.ben_id = ben_id;
-    objEnt.act_id = act_id;
-    objEnt.niv_id = niv_id;
-    objEnt.uni_id = uni_id;
-    objEnt.ins_id = ins_id;
-    objEnt.hora = hora;
-    objEnt.sal_id = sal_id;
-    objEnt.diaLetra = diaLetra;
-    objEnt.fechaReserv = fechaDia;//retonarFecha(fechaDia)
-    objEnt.fechaInicio = fechaIni;
-    objEnt.fechaFin = fechaFin;
-    objEnt.cat_id = CentroIds;
-    let link = base_url + "/Reservacion/reservarBeneficiario";
-    $.ajax({
-      type: "POST",
-      url: link,
-      data: {
-        reservar: objEnt,
-        accion: accion,
-      },
-      success: function (data) {
-        if (data.status) {
-          
-          limpiarBenef();  
-          limpiarTextReservacion();
-
-          swal("Planificación", data.msg, "success");
-          $('#modalFormAgenda').modal("hide");//Oculta el Modal
-          location.reload();
-        } else {
-          swal("Error", data.msg, "error");
-        }
-
-      },
-      dataType: "json",
-    });
-  } else {
-    swal("Atención!", "Seleccione un Nivel", "error");
-  }
-}*/
 
 function reservarUsuario(accion) {
   const idsModal = $("#txth_idsModal").val();
