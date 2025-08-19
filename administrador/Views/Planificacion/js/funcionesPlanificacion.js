@@ -151,6 +151,7 @@ $(document).ready(function () {
   });
 
   $("#btn_generar").click(function () {
+    sessionStorage.removeItem("dts_PlaTemporal");
     generarPlanificacion("Gen");
   });
   $("#btn_siguiente").click(function () {
@@ -340,7 +341,7 @@ function fntNameHoras(str) {
 
 
 /**************** GENERAR PLANIFICACION  NUEVA******************/
-function generarPlanificacion(accionMove) {
+function generarPlanificacion(accionMove) {  
   const tabla = $("#dts_Planificiacion");
   //extrae los datos del instructor planificado en su ingreso
   const Grid = sessionStorage.dts_PlaInstructor ? JSON.parse(sessionStorage.dts_PlaInstructor) : [];
@@ -396,10 +397,15 @@ function obtenerHorarioCoincidente(nDiaHora) {
   const plaTemporal = sessionStorage.dts_PlaTemporal
     ? JSON.parse(sessionStorage.dts_PlaTemporal)
     : [];
+  
+  // Forzar que siempre busque con subguion al final
+  const patron = nDiaHora + "_";
+
   for (const item of plaTemporal) {
     const coincidencia = item.horario
       .split(',')
-      .find(h => h.startsWith(nDiaHora));
+      //.find(h => h.trim() === nDiaHora); // Comparación exacta
+      .find(h => h.startsWith(patron));
 
     if (coincidencia) return coincidencia;
   }
@@ -459,7 +465,7 @@ function CeldaDisponible(idPlan) {
 
 
 function existeHorario(nHorArray, nDiaHora) {
-  console.log("nHorArray", nHorArray, "nDiaHora", nDiaHora);
+  //console.log("nHorArray", nHorArray, "nDiaHora", nDiaHora);
   if (!nHorArray) return false; // Si es null, undefined o vacío, no existe
 
   // Si ya es un array, usamos directamente includes()
@@ -565,13 +571,15 @@ function objDataRow(nLetIni) {
 
 
 function guardarTemp() {
-  const nLetIni = obtenerCodigoDia();//Obtiene el código del día actual iniciales
+  //obtiene el código del día actual iniciales LU, MA, MI, JU, VI, SA, DO
+  const nLetIni = obtenerCodigoDia();
 
   const arrayList = sessionStorage.dts_PlaTemporal
     ? JSON.parse(sessionStorage.dts_PlaTemporal)
     : [];
 
   //Crear nueva fila con los datos del día y almacenarla por dia  horarios y fecha
+  // Si no hay datos, se crea una nueva fila .asignado-true
   const nuevaFila = objDataRow(nLetIni);
 
   if (arrayList.length === 0) {
