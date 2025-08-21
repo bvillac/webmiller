@@ -376,6 +376,15 @@ function generarPlanificacion(accionMove) {
   for (let hora = 8; hora < 22; hora++) {
     const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
     Grid.forEach(instr => {
+      if (accionMove !== "Gen") {
+        let index = retornarIndexArray(obtenerSessionStorage("dts_PlaTemporal") || [],'dia',nLetIni);
+        console.log("index", index);
+        //if (index === -1 && accionMove === "Gen") {
+        if (index === -1) {
+          instr["Horario"] = []; // Inicializar Horario como un array vacío para que solo pueda agregar horas de la temporal y no de las por defecto
+        }
+      }
+      
       const td = generarCeldaHorario(nLetIni, hora, instr);
       fila.append(td);
     });

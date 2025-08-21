@@ -167,28 +167,6 @@ function retornarDiaLetras(nLetIni) {
 
 
 
-//Obtener fecha con Letras
-/*function obtenerFechaConLetras(fechaDia) {
-  const meses = [
-    "enero", "febrero", "marzo", "abril", "mayo", "junio",
-    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
-  ];
-
-  const diasSemana = [
-    "domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"
-  ];
-
-  // Forzar interpretación en zona local
-  const fecha = new Date(fechaDia.replace(/-/g, '/'));
-  //const fecha = new Date(fechaDia);
-  const dia = fecha.getDate();
-  const nombreDia = diasSemana[fecha.getDay()];
-  const mes = meses[fecha.getMonth()];
-  const año = fecha.getFullYear();
-
-  return `${capitalizar(nombreDia)}, ${dia} de ${mes} de ${año}`;
-}*/
-
 function obtenerFechaConLetras(fechaDia) {
   const meses = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -337,6 +315,19 @@ function findAndRemove(array, property, value) {
     if (!Array.isArray(array)) return [];
 
     return array.filter(item => item[property] != value);
+}
+
+function obtenerSessionStorage(key) {
+  if (!sessionStorage[key]) {
+    return null; // No existe la clave
+  }
+
+  try {
+    return JSON.parse(sessionStorage[key]); // Intentar parsear JSON
+  } catch (e) {
+    console.error(`Error al parsear sessionStorage[${key}]:`, e);
+    return sessionStorage[key]; // Devuelve el valor en bruto si no es JSON válido
+  }
 }
 
 
