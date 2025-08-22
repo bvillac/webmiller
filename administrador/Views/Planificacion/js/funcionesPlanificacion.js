@@ -372,19 +372,19 @@ function generarPlanificacion(accionMove) {
   tabla.find("tbody").empty();
 
   const nLetIni = obtenerCodigoDia();//Obtiene el código del día actual iniciales
+  const planTemporal = obtenerSessionStorage("dts_PlaTemporal") || [];
+
+  // Verificar si ya existe planificación para el día
+  const indexDia = retornarIndexArray(planTemporal, "dia", nLetIni);
   // Si no existe planificación, se crea una nueva tabla con los datos del instructor
   for (let hora = 8; hora < 22; hora++) {
     const fila = $("<tr></tr>").append(`<td>${hora}:00</td>`);
     Grid.forEach(instr => {
-      if (accionMove !== "Gen") {
-        let index = retornarIndexArray(obtenerSessionStorage("dts_PlaTemporal") || [],'dia',nLetIni);
-        console.log("index", index);
-        //if (index === -1 && accionMove === "Gen") {
-        if (index === -1) {
-          instr["Horario"] = []; // Inicializar Horario como un array vacío para que solo pueda agregar horas de la temporal y no de las por defecto
-        }
+      // Si no estamos en modo "Gen" y existe planificación temporal para el día
+      if (accionMove !== "Gen" && indexDia > -1) {
+        // Se limpia Horario para que solo use la planificación temporal
+        instr["Horario"] = []; // Inicializar Horario como un array vacío para que solo pueda agregar horas de la temporal y no de las por defecto
       }
-      
       const td = generarCeldaHorario(nLetIni, hora, instr);
       fila.append(td);
     });
