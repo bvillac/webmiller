@@ -324,6 +324,7 @@ function fntupdateReservacion(reservacion) {
     rowInst.res_id = reservacion[i].res_id;
     rowInst.ids = reservacion[i].Ids;
     rowInst.Nombres = reservacion[i].Nombres;
+    rowInst.Actividad = reservacion[i].Actividad;
     rowInst.cat_id = reservacion[i].cat_id;
     rowInst.act_id = reservacion[i].act_id;
     rowInst.niv_id = reservacion[i].niv_id;
@@ -520,6 +521,8 @@ function cargarBeneficiarios(ids) {
         if (Grid[i]["ids"] == ids) {
           option += '<li class="list-group-item d-flex justify-content-between align-items-center">';
           option += Grid[i]["Nombres"];
+          option +='<br>';
+          option += Grid[i]["Actividad"];
           //option +='<span class="badge badge-primary badge-pill">X</span>';
           option += ' <a href="#" class="link_delete" onclick="event.preventDefault();anularReservacion(\'' + Grid[i]["res_id"] + '\',\'' + Grid[i]["ids"] + '\');"><i class="fa fa-trash"></i></a>';
           option += '</li>';

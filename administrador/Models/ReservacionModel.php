@@ -55,17 +55,22 @@ class ReservacionModel extends MysqlAcademico
     public function consultarReservacionFecha($catId,$plaId,$fecha)
     {
         $sql = "SELECT a.res_id,concat(a.res_dia,'_',a.res_hora,'_',a.ins_id,'_',a.sal_id) Ids,a.cat_id,a.pla_id,a.act_id,a.niv_id,a.ben_id,a.ins_id,a.sal_id," ;
-        $sql .= "   a.res_fecha_reservacion FechaRes,a.res_unidad,a.res_dia,a.res_hora,a.res_asistencia, CONCAT(c.per_nombre,' ',c.per_apellido) Nombres " ;
+        $sql .= "   a.res_fecha_reservacion FechaRes,a.res_unidad,a.res_dia,a.res_hora,a.res_asistencia, CONCAT(c.per_nombre,' ',c.per_apellido) Nombres,d.act_nombre Actividad  " ;
         $sql .= "       FROM " . $this->db_name . ".reservacion a   " ;
         $sql .= "           inner join (" . $this->db_name . ".beneficiario b   " ;
         $sql .= "               inner join " . $this->db_nameAdmin . ".persona c  " ;
         $sql .= "                   on b.per_id=c.per_id)   " ;
         $sql .= "           on a.ben_id=b.ben_id   " ;
+        $sql .= "          inner join " . $this->db_name . ".actividad d on a.act_id=d.act_id   " ;
         $sql .= "   where a.cat_id={$catId} and a.pla_id={$plaId} and date(a.res_fecha_reservacion) = '{$fecha}' " ; 
-        $sql .= "       and a.res_estado_logico!=0  order by a.res_hora,a.ins_id " ;     
+        $sql .= "       and a.res_estado_logico!=0  order by a.res_hora,a.ins_id " ;  
+
         $request = $this->select_all($sql);
+        putMessageLogFile($request);
+         //
         return $request;
     }
+
 
 
     public function insertData($dataObj)

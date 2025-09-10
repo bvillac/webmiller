@@ -126,7 +126,7 @@ class ActividadModel extends MysqlAcademico
 
     public function consultarActividad(){
         $sql = "SELECT act_id Ids,act_nombre Nombre, act_obligatoria Obligatoria ";
-        $sql .= " FROM ". $this->db_name .".actividad where act_estado_logico!=0 ORDER BY Nombre ASC ";
+        $sql .= " FROM ". $this->db_name .".actividad where act_estado_logico!=0 ORDER BY Ids ASC ";
         $request = $this->select_all($sql);
         return $request;
     }
