@@ -66,7 +66,6 @@ class ReservacionModel extends MysqlAcademico
         $sql .= "       and a.res_estado_logico!=0  order by a.res_hora,a.ins_id " ;  
 
         $request = $this->select_all($sql);
-        putMessageLogFile($request);
          //
         return $request;
     }
