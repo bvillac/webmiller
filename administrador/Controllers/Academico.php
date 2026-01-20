@@ -144,6 +144,25 @@ class Academico extends Controllers
 		}
 	}
 
+    public function validarLeccionBeneficiario(){
+        if($_POST){
+            $arrResponse = array();
+            $benId = isset($_POST['ben_id']) ? intval($_POST['ben_id']) : 0;
+            if($benId>0){
+                $request = $this->model->validarContinuarLeccion($benId);
+                if(!empty($request)){
+                    $arrResponse = array("status" => true, "msg" => 'El beneficiario debe repetir la lección.', "data" => $request);
+                }else{
+                    $arrResponse = array("status" => false, "msg" => 'El beneficiario puede continuar con la siguiente lección.');
+                }
+            }else{
+                $arrResponse = array("status" => false, "msg" => 'Datos incorrectos.');
+            }
+            echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
+        }
+        die();
+    }   
+
     
    
 

@@ -58,6 +58,12 @@ require_once "Views/Reservacion/Modals/modalPagos.php";
         </div>
 
         <div class="col-sm">
+          <div id="alerta-cupo" class="alert alert-dismissible fade show d-none" role="alert"
+                    style="position: sticky; top: 0; z-index: 1000;">
+                    <span id="alerta-cupo-mensaje"><strong>¡Atención!</strong> Mensaje dinámico aquí.</span>
+                    <button type="button" class="btn-close ms-auto" aria-label="Cerrar"
+                        onclick="ocultarAlertaContinue()"></button>
+                </div>
           <div class="row">
             <div class="form-group col-md-6">
               <label for="txt_NumeroContrato">Número Contrato<span class="required">*</span></label>
@@ -87,8 +93,8 @@ require_once "Views/Reservacion/Modals/modalPagos.php";
         </div>
         <div class="col-sm">
           <h5 class="line-head">Reservados</h5>
+              
           <ul class="list-group" id="list_beneficiariosPrimary">
-
 
           </ul>
         </div>

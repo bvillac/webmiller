@@ -146,8 +146,56 @@ $(document).ready(function () {
       $('#txt_CodigoBeneficiario').val(ui.item.Cedula);
       $('#txth_idBenef').val(ui.item.id);
       guardarBeneficiarioEnSesion(ui.item.ContId, ui.item.Nombres, ui.item.Cedula, ui.item.NumeroContrato, ui.item.id);
+
+      validarleccion(ui.item.id, ui.item.Nombres);
+
     }
   });
+
+  function validarleccion(idBenef, nombreBeneficiario) {
+    if (!idBenef || !nombreBeneficiario) {
+      swal("Atención!", "Seleccionar un Beneficiario", "info");
+      return false;
+    }
+
+    $.ajax({
+      type: "POST",
+      url: base_url + '/Academico/validarLeccionBeneficiario',
+      data: {
+        ben_id: idBenef,
+      },
+      dataType: "json",
+      success: function (response) {
+        if (response.status) {
+          /*swal(
+            "Información del Beneficiario",
+            response.msg + "<br><br><strong>Datos adicionales:</strong><br><pre>" + JSON.stringify(response.data, null, 2) + "</pre>",
+            "info",
+          );*/
+          const data = response.data || {};
+          swal(
+            "Información del Beneficiario",
+            response.msg +
+            "<br><br><strong>Datos adicionales:</strong><br>" +
+            "<ul style='text-align:left'>" +
+            "<li><strong>Nivel:</strong> " + (data.Nivel || "N/A") + "</li>" +
+            "<li><strong>Unidad:</strong> " + (data.Unidad || "N/A") + "</li>" +
+            "<li><strong>Actividad:</strong> " + (data.Actividad || "N/A") + "</li>" +
+            "<li><strong>Valor:</strong> " + (data.Valoracion || "N/A") + "</li>" +
+            "</ul>",
+            "info"
+          );
+          return false;
+        }
+      },
+      error: function (xhr, status, error) {
+        console.error("Error AJAX:", status, error);
+        swal("Error", "Ocurrió un problema al validar la lección del beneficiario.", "error");
+        return false;
+      }
+    });
+    return true;
+  }
 
 
   $("#txt_CodigoBeneficiario").autocomplete({
@@ -194,6 +242,7 @@ $(document).ready(function () {
       $('#txt_NumeroContrato').val(ui.item.NumeroContrato);
       $('#txth_idBenef').val(ui.item.id);
       guardarBeneficiarioEnSesion(ui.item.ContId, ui.item.Nombres, ui.item.Cedula, ui.item.NumeroContrato, ui.item.id);
+      validarleccion(ui.item.id, ui.item.Nombres);
 
     }
   });
@@ -521,7 +570,7 @@ function cargarBeneficiarios(ids) {
         if (Grid[i]["ids"] == ids) {
           option += '<li class="list-group-item d-flex justify-content-between align-items-center">';
           option += Grid[i]["Nombres"];
-          option +='<br>';
+          option += '<br>';
           option += Grid[i]["Actividad"];
           //option +='<span class="badge badge-primary badge-pill">X</span>';
           option += ' <a href="#" class="link_delete" onclick="event.preventDefault();anularReservacion(\'' + Grid[i]["res_id"] + '\',\'' + Grid[i]["ids"] + '\');"><i class="fa fa-trash"></i></a>';
@@ -757,4 +806,36 @@ function retornaFilaData(c, Grid) {
   strFila += '<td>' + Grid[c]['CANCELADO'] + '</td>';
   strFila = '<tr class="odd gradeX">' + strFila + '</tr>';
   return strFila;
+}
+
+
+function mostrarAlertaContinue(mensaje = "", tipo = "danger") {
+  const alerta = document.getElementById("alerta-cupo");
+  const mensajeElemento = document.getElementById("alerta-cupo-mensaje");
+  if (!alerta || !mensajeElemento) return;
+
+  // Quitar clases anteriores (si las hubiera)
+  alerta.classList.remove("alert-danger", "alert-success", "alert-warning", "alert-info");
+
+  // Agregar clase correspondiente al tipo
+  alerta.classList.add(`alert-${tipo}`);
+
+  // Actualizar contenido
+  mensajeElemento.innerHTML = `<strong>¡Atención!</strong> ${mensaje}`;
+
+  // Mostrar
+  alerta.classList.remove("d-none");
+
+  // Reiniciar temporizador
+  //clearTimeout(alertaTimeout);
+  alertaTimeout = setTimeout(() => {
+    ocultarAlertaContinue();
+  }, 60000);
+}
+
+function ocultarAlertaContinue() {
+  const alerta = document.getElementById("alerta-cupo");
+  if (!alerta) return;
+
+  alerta.classList.add("d-none");
 }
