@@ -96,8 +96,10 @@ class Asistencia extends Controllers
                     $InsId = isset($_GET['InsId']) ? $_GET['InsId'] : "";
                     $hora = isset($_GET['hora']) ? $_GET['hora'] : "";
                     $fechaDia = isset($_GET['fechaDia']) ? $_GET['fechaDia'] : "";
-                    $estadoAsist = isset($_POST['EstadoAsist']) ? $_POST['EstadoAsist'] : 0;
+                    $estadoAsist = isset($_GET['EstadoAsist']) ? $_GET['EstadoAsist'] : 0;
                     $plaId=0;
+                    //putMessageLogFile("Generando PDF Asistencia...");
+                    //putMessageLogFile("Centro: ".$centro." - Instructor: ".$InsId." - Fecha: ".$fechaDia." - Hora: ".$hora." - Estado: ".$estadoAsist);
                     $dataSet = $this->model->consultarAsistenciaFechaHora($centro,$plaId,$InsId,$fechaDia,$hora,$estadoAsist);
                     $c = 0;
                     $rowData=[];
