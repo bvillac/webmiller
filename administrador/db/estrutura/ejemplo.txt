@@ -10,3 +10,14 @@ CREATE TABLE IF NOT EXISTS `contacto_correo` (
   `fecha_creacion` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`cont_id`)
 ) ENGINE=InnoDB;
+
+
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('REVIEW AFTER TEST', '0', '1', '1');
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('O.P PREPARATION', '0', '1', '1');
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('O.P PRESENTATION', '0', '1', '1');
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('TEST #1', '0', '1', '1');
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('TEST #2', '0', '1', '1');
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('TEST #3', '0', '1', '1');
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('TEST #4', '0', '1', '1');
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('TEST #5', '0', '1', '1');
+INSERT INTO `db_academico_back`.`actividad` (`act_nombre`, `act_obligatoria`, `act_usuario_creacion`, `act_estado_logico`) VALUES ('TEST #6', '0', '1', '1');
