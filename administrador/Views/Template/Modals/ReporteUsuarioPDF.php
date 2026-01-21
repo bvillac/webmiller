@@ -67,7 +67,7 @@
 		<tbody>
 			<tr>
 				<td class="wd33">
-					<img src="<?= media() ?>/logo/logo-v3.jpg" alt="Logo">
+					<img src="<?= mediaImg() ?>/logo/logo-v3.jpg" alt="Logo">
 				</td>
 				<td class="text-center wd33">
 					<h4><strong><?= $empresa['Razon'] ?></strong></h4>

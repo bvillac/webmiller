@@ -96,8 +96,9 @@ class Asistencia extends Controllers
                     $InsId = isset($_GET['InsId']) ? $_GET['InsId'] : "";
                     $hora = isset($_GET['hora']) ? $_GET['hora'] : "";
                     $fechaDia = isset($_GET['fechaDia']) ? $_GET['fechaDia'] : "";
+                    $estadoAsist = isset($_POST['EstadoAsist']) ? $_POST['EstadoAsist'] : 0;
                     $plaId=0;
-                    $dataSet = $this->model->consultarAsistenciaFechaHora($centro,$plaId,$InsId,$fechaDia,$hora);
+                    $dataSet = $this->model->consultarAsistenciaFechaHora($centro,$plaId,$InsId,$fechaDia,$hora,$estadoAsist);
                     $c = 0;
                     $rowData=[];
                     while ($c < sizeof($dataSet)) {

@@ -124,7 +124,7 @@ $HoraFormato= date("H:i:s");
             <tbody>
                 <tr>
                     <td class="wd33">
-                        <img src="<?= media() ?>/logo/<?= $_SESSION['empresaData']['Logo'] ?>" alt="Logo">
+                        <img src="<?= mediaImg() ?>/logo/<?= $_SESSION['empresaData']['Logo'] ?>" alt="Logo">
                     </td>
                     <td class="text-center wd33">
                         <p>

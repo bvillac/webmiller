@@ -104,11 +104,12 @@ class Academico extends Controllers
                     }
                 } 
                 if ($request["status"]) {
-                    if ($option == 1) {
-                        $arrResponse = array('status' => true, 'numero' => $request["numero"], 'msg' => 'Datos guardados correctamente.');
-                    } else {
-                        $arrResponse = array('status' => true, 'numero' => $request["numero"], 'msg' => 'Datos Actualizados correctamente.');
-                    }
+                    $arrResponse = array('status' => true, 'numero' => $request["numero"], 'msg' => 'Datos guardados correctamente.');
+                    // if ($option == 1) {
+                        
+                    // } else {
+                    //     $arrResponse = array('status' => true, 'numero' => $request["numero"], 'msg' => 'Datos Actualizados correctamente.');
+                    // }
                 } else {
                     $arrResponse = array("status" => false, "msg" => 'No es posible almacenar los datos.');
                 }

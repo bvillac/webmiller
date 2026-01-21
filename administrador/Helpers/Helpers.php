@@ -17,6 +17,12 @@ function base_apps()
 function media()
 {
     return BASE_URL_ADMIN . "/Assets";
+    //return $_SERVER['DOCUMENT_ROOT'] . "/webmiller/administrador/Assets";
+}
+
+function mediaImg()
+{
+    return $_SERVER['DOCUMENT_ROOT'] . "/webmiller/administrador/Assets";
 }
 
 function vendor()
