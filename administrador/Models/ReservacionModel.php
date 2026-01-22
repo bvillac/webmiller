@@ -79,9 +79,10 @@ class ReservacionModel extends MysqlAcademico
         $pla_id=$dataObj['pla_id'];
         $ben_id=$dataObj['ben_id'];
         $act_id=$dataObj['act_id'];
+        $res_hora=$dataObj['hora'];
         $fechaReserv=$dataObj['fechaReserv'];
         $sql = "SELECT * FROM " . $this->db_name . ".reservacion 
-                    where pla_id={$pla_id} and ben_id={$ben_id} and act_id={$act_id} and date(res_fecha_reservacion)='{$fechaReserv}' ";
+                    where pla_id={$pla_id} and ben_id={$ben_id} and act_id={$act_id} and res_hora='{$res_hora}' and date(res_fecha_reservacion)='{$fechaReserv}' ";
             //putMessageLogFile($sql); 
         $request = $this->select($sql);
         if (empty($request)) {
