@@ -72,7 +72,7 @@ class AcademicoModel extends MysqlAcademico
         $sql .= "    left join " . $this->db_name . ".valoracion d on d.val_id=a.val_id ";
         $sql .= " where a.cac_estado_logico!=0 and a.val_id=1 and a.ben_id={$benId} ";
         $sql .= " ORDER BY a.cac_fecha_evaluacion DESC LIMIT 1 ";
-        //putMessageLogFile($sql);
+        putMessageLogFile($sql);
         $request = $this->select($sql);
         return $request;
     }
