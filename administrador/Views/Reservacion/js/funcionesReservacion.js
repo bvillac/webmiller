@@ -173,18 +173,19 @@ $(document).ready(function () {
             "info",
           );*/
           const data = response.data || {};
+
           swal(
-            "Información del Beneficiario",
-            response.msg +
-            "<br><br><strong>Datos adicionales:</strong><br>" +
-            "<ul style='text-align:left'>" +
-            "<li><strong>Nivel:</strong> " + (data.Nivel || "N/A") + "</li>" +
-            "<li><strong>Unidad:</strong> " + (data.Unidad || "N/A") + "</li>" +
-            "<li><strong>Actividad:</strong> " + (data.Actividad || "N/A") + "</li>" +
-            "<li><strong>Valor:</strong> " + (data.Valoracion || "N/A") + "</li>" +
-            "</ul>",
+            "📘 Información del Beneficiario",
+            `   ${response.msg}
+                Nivel: ${data.Nivel || "N/A"}
+                Unidad: ${data.Unidad || "N/A"}
+                Actividad: ${data.Actividad || "N/A"}
+                Valor: ${data.Valoracion || "N/A"}
+            `,
             "info"
           );
+
+
           return false;
         }
       },
